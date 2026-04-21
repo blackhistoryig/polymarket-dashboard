@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymarket Live Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .markets-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .markets-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        .markets-header h2 {
+            color: #333;
+            font-size: 1.8em;
+        }
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease;
+        }
+        .refresh-btn:hover {
+            background: #764ba2;
+        }
+        .market-item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s ease;
+        }
+        .market-item:hover {
+            background: #f8f9fa;
+        }
+        .market-item:last-child {
+            border-bottom: none;
+        }
+        .market-title {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .market-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .market-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .market-volume {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .market-liquidity {
+            color: #28a745;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.2em;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .last-updated {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Polymarket Live Dashboard</h1>
+            <p>Real-time prediction market data</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Markets</div>
+                <div class="stat-value" id="totalMarkets">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Volume</div>
+                <div class="stat-value" id="totalVolume">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Traders</div>
+                <div class="stat-value" id="activeTraders">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">24h Volume</div>
+                <div class="stat-value" id="volume24h">-</div>
+            </div>
+        </div>
+
+        <div class="markets-container">
+            <div class="markets-header">
+                <h2>🔥 Hot Markets</h2>
+                <button class="refresh-btn" onclick="loadMarkets()">↻ Refresh</button>
+            </div>
+            <div id="marketsContent">
+                <div class="loading">Loading markets...</div>
+            </div>
+            <div class="last-updated" id="lastUpdated"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadMarkets() {
+            try {
+                const response = await fetch('https://gamma-api.polymarket.com/markets?limit=20&active=true');
+                const markets = await response.json();
+                
+                displayMarkets(markets);
+                updateStats(markets);
+                updateTimestamp();
+            } catch (error) {
+                document.getElementById('marketsContent').innerHTML = 
+                    '<div class="error">Error loading markets. Please try again later.</div>';
+                console.error('Error:', error);
+            }
+        }
+
+        function displayMarkets(markets) {
+            const container = document.getElementById('marketsContent');
+            
+            if (!markets || markets.length === 0) {
+                container.innerHTML = '<div class="loading">No markets available</div>';
+                return;
+            }
+
+            container.innerHTML = markets.map(market => `
+                <div class="market-item">
+                    <div class="market-title">${market.question || 'Untitled Market'}</div>
+                    <div class="market-details">
+                        <div class="market-price">$${formatNumber(market.volume || 0)}</div>
+                        <div class="market-volume">Volume: $${formatNumber(market.volume || 0)}</div>
+                        <div class="market-liquidity">Liquidity: $${formatNumber(market.liquidity || 0)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats(markets) {
+            document.getElementById('totalMarkets').textContent = markets.length;
+            
+            const totalVol = markets.reduce((sum, m) => sum + (parseFloat(m.volume) || 0), 0);
+            document.getElementById('totalVolume').textContent = '$' + formatNumber(totalVol);
+            
+            const vol24h = markets.reduce((sum, m) => sum + (parseFloat(m.volume24hr) || 0), 0);
+            document.getElementById('volume24h').textContent = '$' + formatNumber(vol24h);
+            
+            document.getElementById('activeTraders').textContent = '10K+';
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+            return num.toFixed(2);
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = 
+                'Last updated: ' + now.toLocaleTimeString();
+        }
+
+        // Load markets on page load
+        loadMarkets();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadMarkets, 30000);
+    </script>
+</body>
+</html>
