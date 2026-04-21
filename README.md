@@ -86,6 +86,35 @@ This project is open source and available under the MIT License.
 
 If you find this project useful, please consider giving it a star!
 
+## 🚀 Quick Deploy to Vercel (FREE)
+
+The easiest way to deploy this dashboard is using Vercel's free hosting:
+
+### Step 1: Import to Vercel
+
+1. Go to [vercel.com](https://vercel.com) and sign up/login
+2. Click **"Add New"** → **"Project"**
+3. Import this GitHub repository: `blackhistoryig/polymarket-dashboard`
+4. Vercel will auto-detect it as a Next.js app
+
+### Step 2: Configure Environment Variables
+
+Before deploying, add your API key:
+
+1. In the Vercel project settings, go to **"Environment Variables"**
+2. Add: `FALCON_API_KEY` = `your-api-key-here`
+3. Click **"Deploy"**
+
+### Step 3: Done! 🎉
+
+Your dashboard will be live at: `https://your-project.vercel.app`
+
+---
+
+**Note**: The backend API proxy (`/api/markets.js`) automatically handles CORS and keeps your API key secure on the server side.
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
+
 ---
 
 **Built with ❤️ for the Polymarket community**
