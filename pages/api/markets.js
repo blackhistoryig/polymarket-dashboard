@@ -1,76 +1,52 @@
-// Falcon API proxy - backend keeps API key secure
+// Falcon API proxy - keeps API key secure server-side
 export default async function handler(req, res) {
   const apiKey = process.env.FALCON_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'FALCON_API_KEY environment variable not set' });
+    return res.status(500).json({ error: 'FALCON_API_KEY not set' });
   }
 
   try {
-    const response = await fetch('https://narrative.agent.heisenberg.so/api/v2/semantic/retrieve/parameterized', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        agent_id: 574,
-        params: {
-          closed: "False",
-          min_volume: "1000"
+    const response = await fetch(
+      'https://narrative.agent.heisenberg.so/api/v2/semantic/retrieve/parameterized',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
         },
-        pagination: {
-          limit: 50,
-          offset: 0
-        },
-        formatter_config: {
-          format_type: "raw"
-        }
-      })
-    });
+        body: JSON.stringify({
+          agent_id: 574,
+          params: {
+            closed: 'False',
+            min_volume: '1000',
+          },
+          pagination: { limit: 50, offset: 0 },
+          formatter_config: { format_type: 'raw' },
+        }),
+      }
+    );
 
-    const rawText = await response.text();
-    let data;
-    try {
-      data = JSON.parse(rawText);
-    } catch (e) {
-      return res.status(500).json({
-        error: 'Invalid JSON from Falcon API',
-        httpStatus: response.status,
-        raw: rawText.slice(0, 2000)
-      });
+    const text = await response.text();
+    let json;
+    try { json = JSON.parse(text); }
+    catch (e) {
+      return res.status(500).json({ error: 'Non-JSON from Falcon', raw: text.slice(0, 1000) });
     }
 
     if (!response.ok) {
-      return res.status(response.status).json({
-        error: 'Falcon API returned error',
-        httpStatus: response.status,
-        details: data
-      });
+      return res.status(response.status).json({ error: 'Falcon API error', details: json });
     }
 
-    // Handle all possible response shapes
-    let markets = [];
-    if (Array.isArray(data)) {
-      markets = data;
-    } else if (data.results && Array.isArray(data.results)) {
-      markets = data.results;
-    } else if (data.data && Array.isArray(data.data)) {
-      markets = data.data;
-    } else if (data.markets && Array.isArray(data.markets)) {
-      markets = data.markets;
-    } else {
-      // Return raw so we can debug
-      return res.status(200).json({ results: [], raw: data, debug: 'unexpected shape' });
-    }
+    // Falcon returns: { data: { results: [...markets...] } }
+    const markets =
+      (json.data && Array.isArray(json.data.results) ? json.data.results : null) ||
+      (json.data && Array.isArray(json.data) ? json.data : null) ||
+      (Array.isArray(json.results) ? json.results : null) ||
+      (Array.isArray(json) ? json : null) ||
+      [];
 
-    return res.status(200).json({
-      results: markets,
-      total: markets.length
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: 'Failed to fetch from Falcon API',
-      details: error.message
-    });
+    return res.status(200).json({ results: markets, total: markets.length });
+  } catch (err) {
+    return res.status(500).json({ error: 'Fetch failed', details: err.message });
   }
 }
