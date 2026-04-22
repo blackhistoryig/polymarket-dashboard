@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
   try {
     const now = Date.now();
-    const tenMinsAgo = now - (10 * 60 * 1000);
+    const oneDayAgo = now - (24 * 60 * 60 * 1000);
 
     const fRes = await fetch(
       'https://narrative.agent.heisenberg.so/api/v2/semantic/retrieve/parameterized',
@@ -16,9 +16,9 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
           agent_id: 572,
-          params: { 
+          params: {
             token_id,
-            start_time: String(tenMinsAgo),
+            start_time: String(oneDayAgo),
             end_time: String(now)
           },
           pagination: { limit: 1 },
@@ -28,7 +28,13 @@ export default async function handler(req, res) {
     );
     const data = await fRes.json();
     const snapshots = data.data?.results || data.results || [];
-    return res.status(200).json({ snapshot: snapshots[0] || null });
+    const snapshot = snapshots[0] || null;
+    // Return asks and bids directly so frontend can use obData.asks / obData.bids
+    return res.status(200).json({
+      asks: snapshot?.asks || [],
+      bids: snapshot?.bids || [],
+      timestamp: snapshot?.timestamp || null
+    });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
