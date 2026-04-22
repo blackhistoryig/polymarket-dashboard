@@ -23,32 +23,43 @@ export default function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [filter, setFilter] = useState('');
   const [sortBy, setSortBy] = useState('volume');
-  
+
   const [selectedMarket, setSelectedMarket] = useState(null);
   const [details, setDetails] = useState({ orderbook: null, trades: [], loading: false });
 
   const loadData = useCallback(async () => {
     try {
-      setLoading(true); setError(null);
+      setLoading(true);
+      setError(null);
       const res = await fetch('/api/markets');
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Markets fetch failed');
       setMarkets(data.results || []);
-      setLastUpdated(new Date());
-    } catch (e) { setError(e.message); } finally { setLoading(false); }
+      setLastUpdated(new Date().toLocaleTimeString());
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const loadDetails = async (m) => {
     setDetails({ orderbook: null, trades: [], loading: true });
     try {
+      // Orderbook needs token_id, Trades can use slug or condition_id
       const [obRes, trRes] = await Promise.all([
-        fetch('/api/orderbook?slug=' + m.market_slug),
-        fetch('/api/trades?slug=' + m.market_slug)
+        fetch(`/api/orderbook?token_id=${m.token_id}`),
+        fetch(`/api/trades?slug=${m.slug}&condition_id=${m.condition_id}`)
       ]);
       const [obData, trData] = await Promise.all([obRes.json(), trRes.json()]);
-      setDetails({ orderbook: obData.results, trades: trData.results, loading: false });
+      
+      setDetails({
+        orderbook: obData || null,
+        trades: trData.results || [],
+        loading: false
+      });
     } catch (e) {
-      console.error(e);
+      console.error('Failed to load details:', e);
       setDetails(prev => ({ ...prev, loading: false }));
     }
   };
@@ -59,21 +70,13 @@ export default function Dashboard() {
     return () => clearInterval(t);
   }, [loadData]);
 
-  const getYesPrice = (m) => {
-    if (!m.outcomePrices) return null;
-    const prices = Array.isArray(m.outcomePrices) ? m.outcomePrices : [];
-    return prices[0] != null ? parseFloat(prices[0]) : null;
-  };
-
-  const filtered = [...markets]
-    .filter((m) => !filter || (m.question || '').toLowerCase().includes(filter.toLowerCase()))
+  const filteredMarkets = markets
+    .filter(m => m.question.toLowerCase().includes(filter.toLowerCase()))
     .sort((a, b) => {
-      if (sortBy === 'volume') return (parseFloat(b.volume_total) || 0) - (parseFloat(a.volume_total) || 0);
-      if (sortBy === 'endDate') return new Date(a.end_date || 0) - new Date(b.end_date || 0);
+      if (sortBy === 'volume') return b.volume_total - a.volume_total;
+      if (sortBy === 'newest') return new Date(b.start_date) - new Date(a.start_date);
       return 0;
     });
-
-  const totalVol = markets.reduce((s, m) => s + (parseFloat(m.volume_total) || 0), 0);
 
   return (
     <div style={{ background: '#0a0b0d', color: '#fff', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
@@ -82,38 +85,75 @@ export default function Dashboard() {
       </Head>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 20px' }}>
-        <header style={{ marginBottom: 40, borderBottom: '1px solid #333', paddingBottom: 24, display: 'flex', justifyContent: 'space-between' }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 24 }}>Polymarket Live Dashboard</h1>
-            <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.5 }}>Real-time Orderbook & Trades</p>
+            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800 }}>Polymarket Live Dashboard</h1>
+            <p style={{ margin: '8px 0 0', opacity: 0.6 }}>Real-time Orderbook & Trades (Falcon API)</p>
           </div>
-          <button onClick={loadData} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 6, cursor: 'pointer' }}>
-            {loading ? '...' : 'Refresh'}
-          </button>
+          <div style={{ textAlign: 'right' }}>
+            <button 
+              onClick={loadData}
+              disabled={loading}
+              style={{
+                background: '#2563eb', color: '#fff', border: 'none', padding: '12px 24px',
+                borderRadius: 8, cursor: 'pointer', fontWeight: 600, transition: '0.2s'
+              }}
+            >
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
+            {lastUpdated && <p style={{ fontSize: 12, opacity: 0.4, marginTop: 8 }}>Updated: {lastUpdated}</p>}
+          </div>
         </header>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 40 }}>
-           <div style={{ background: '#16181d', padding: 20, borderRadius: 12 }}>
-             <div style={{ fontSize: 12, opacity: 0.5 }}>TOTAL VOLUME</div>
-             <div style={{ fontSize: 20, fontWeight: 700 }}>{fmt$(totalVol)}</div>
-           </div>
-           <div style={{ background: '#16181d', padding: 20, borderRadius: 12 }}>
-             <div style={{ fontSize: 12, opacity: 0.5 }}>ACTIVE MARKETS</div>
-             <div style={{ fontSize: 20, fontWeight: 700 }}>{markets.length}</div>
-           </div>
-           <div style={{ background: '#16181d', padding: 20, borderRadius: 12 }}>
-             <div style={{ fontSize: 12, opacity: 0.5 }}>LIVE PRICES</div>
-             <div style={{ fontSize: 20, fontWeight: 700 }}>{markets.filter(m => getYesPrice(m) !== null).length}</div>
-           </div>
+        {error && (
+          <div style={{ background: '#ef444422', border: '1px solid #ef4444', color: '#ef4444', padding: 16, borderRadius: 8, marginBottom: 20 }}>
+            Error: {error}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 16, marginBottom: 30 }}>
+          <input 
+            type="text"
+            placeholder="Search markets..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            style={{
+              flex: 1, background: '#16181d', border: '1px solid #333', color: '#fff',
+              padding: '12px 16px', borderRadius: 8, fontSize: 16
+            }}
+          />
+          <select 
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{
+              background: '#16181d', border: '1px solid #333', color: '#fff',
+              padding: '0 16px', borderRadius: 8, cursor: 'pointer'
+            }}
+          >
+            <option value="volume">Top Volume</option>
+            <option value="newest">Newest</option>
+          </select>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
-          {filtered.map((m, i) => (
-            <div key={i} onClick={() => { setSelectedMarket(m); loadDetails(m); }} style={{ background: '#16181d', padding: 20, borderRadius: 12, border: '1px solid #333', cursor: 'pointer' }}>
-              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>{m.question}</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                <span style={{ color: '#22c55e' }}>{fmtPct(getYesPrice(m))}</span>
-                <span style={{ opacity: 0.5 }}>{fmt$(m.volume_total)}</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 20 }}>
+          {filteredMarkets.map((m, i) => (
+            <div 
+              key={i}
+              onClick={() => { setSelectedMarket(m); loadDetails(m); }}
+              style={{
+                background: '#16181d', border: '1px solid #333', borderRadius: 12,
+                padding: 20, cursor: 'pointer', transition: '0.2s transform',
+                ':hover': { transform: 'translateY(-2px)', borderColor: '#444' }
+              }}
+            >
+              <h3 style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.4 }}>{m.question}</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: '#22c55e', fontWeight: 700, fontSize: 20 }}>
+                  {fmtPct(m.last_trade_price)}
+                </span>
+                <span style={{ opacity: 0.5, fontSize: 14 }}>
+                  Vol: {fmt$(m.volume_total)}
+                </span>
               </div>
             </div>
           ))}
@@ -121,41 +161,82 @@ export default function Dashboard() {
       </div>
 
       {selectedMarket && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
-          <div style={{ background: '#16181d', width: '100%', maxWidth: 800, maxHeight: '90vh', overflow: 'auto', borderRadius: 16, border: '1px solid #333', padding: 30, position: 'relative' }}>
-            <button onClick={() => setSelectedMarket(null)} style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', color: '#fff', fontSize: 24, cursor: 'pointer' }}>&times;</button>
-            <h2 style={{ marginTop: 0 }}>{selectedMarket.question}</h2>
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 100, padding: 20, backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            background: '#16181d', width: '100%', maxWidth: 900, maxHeight: '90vh',
+            overflow: 'auto', borderRadius: 20, border: '1px solid #333',
+            padding: 40, position: 'relative'
+          }}>
+            <button 
+              onClick={() => setSelectedMarket(null)}
+              style={{
+                position: 'absolute', top: 20, right: 20, background: '#333',
+                border: 'none', color: '#fff', width: 32, height: 32,
+                borderRadius: '50%', cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', fontSize: 20
+              }}
+            >
+              &times;
+            </button>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 30, marginTop: 20 }}>
+            <h2 style={{ marginTop: 0, paddingRight: 40 }}>{selectedMarket.question}</h2>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 40, marginTop: 30 }}>
               <div>
-                <h3>Orderbook</h3>
-                {details.loading ? <p>Loading...</p> : (
+                <h3 style={{ borderBottom: '1px solid #333', paddingBottom: 10 }}>Orderbook</h3>
+                {details.loading ? <p>Loading orderbook...</p> : (
                   <div>
+                    {/* Asks (Sells) in Red */}
                     <div style={{ color: '#ef4444' }}>
                       {details.orderbook?.asks?.slice(0, 5).reverse().map((a, j) => (
-                        <div key={j} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>{a.price}</span><span>{a.size}</span></div>
+                        <div key={j} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 14 }}>
+                          <span>{parseFloat(a.price).toFixed(3)}</span>
+                          <span style={{ opacity: 0.6 }}>{Math.round(a.size)}</span>
+                        </div>
                       ))}
                     </div>
-                    <div style={{ height: 1, background: '#333', margin: '8px 0' }}></div>
+                    
+                    <div style={{ height: 1, background: '#333', margin: '15px 0' }}></div>
+                    
+                    {/* Bids (Buys) in Green */}
                     <div style={{ color: '#22c55e' }}>
                       {details.orderbook?.bids?.slice(0, 5).map((b, j) => (
-                        <div key={j} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>{b.price}</span><span>{b.size}</span></div>
+                        <div key={j} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 14 }}>
+                          <span>{parseFloat(b.price).toFixed(3)}</span>
+                          <span style={{ opacity: 0.6 }}>{Math.round(b.size)}</span>
+                        </div>
                       ))}
                     </div>
+                    
+                    {!details.orderbook && !details.loading && <p style={{ opacity: 0.5 }}>No orderbook data</p>}
                   </div>
                 )}
               </div>
+
               <div>
-                <h3>Recent Trades</h3>
-                {details.loading ? <p>Loading...</p> : (
-                  <div>
-                    {details.trades?.slice(0, 10).map((t, j) => (
-                      <div key={j} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                        <span style={{ color: t.side === 'BUY' ? '#22c55e' : '#ef4444' }}>{t.side}</span>
-                        <span>{t.price}</span>
+                <h3 style={{ borderBottom: '1px solid #333', paddingBottom: 10 }}>Recent Trades</h3>
+                {details.loading ? <p>Loading trades...</p> : (
+                  <div style={{ maxHeight: 400, overflow: 'auto' }}>
+                    {details.trades?.slice(0, 20).map((t, j) => (
+                      <div key={j} style={{ 
+                        display: 'flex', justifyContent: 'space-between', 
+                        padding: '8px 0', borderBottom: '1px solid #ffffff05', fontSize: 13
+                      }}>
+                        <span style={{ 
+                          color: t.side === 'BUY' ? '#22c55e' : '#ef4444', 
+                          fontWeight: 700, width: 40 
+                        }}>
+                          {t.side}
+                        </span>
+                        <span>{parseFloat(t.price).toFixed(3)}</span>
                         <span style={{ opacity: 0.5 }}>{fmt$(t.size * t.price)}</span>
                       </div>
                     ))}
+                    {(!details.trades || details.trades.length === 0) && <p style={{ opacity: 0.5 }}>No recent trades</p>}
                   </div>
                 )}
               </div>
