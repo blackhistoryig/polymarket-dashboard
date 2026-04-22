@@ -1,6 +1,5 @@
 // Falcon API proxy - backend keeps API key secure
 export default async function handler(req, res) {
-  // Allow both GET and POST from the frontend
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -11,7 +10,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch('https://narrative.agent.heisenberg.so/v2/markets/retrieve', {
+    // Correct Heisenberg endpoint (parameterized semantic retrieval)
+    const response = await fetch('https://narrative.agent.heisenberg.so/api/v2/semantic/retrieve/parameterized', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -36,7 +36,8 @@ export default async function handler(req, res) {
     } catch (e) {
       return res.status(500).json({
         error: 'Invalid JSON from Falcon API',
-        raw: rawText.slice(0, 500)
+        status: response.status,
+        raw: rawText.slice(0, 1000)
       });
     }
 
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Normalize response - Falcon may return data in different shapes
+    // Normalize response - handle all possible Falcon response shapes
     const markets =
       data.results ||
       data.data ||
