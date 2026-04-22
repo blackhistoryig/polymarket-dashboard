@@ -1,7 +1,6 @@
 // Markets endpoint: Gamma API (primary) with full field mapping
 export default async function handler(req, res) {
   const apiKey = process.env.FALCON_API_KEY;
-
   // Support pagination via query params
   const limit = Math.min(parseInt(req.query.limit) || 50, 100);
   const offset = parseInt(req.query.offset) || 0;
@@ -14,7 +13,6 @@ export default async function handler(req, res) {
     if (!gammaRes.ok) throw new Error(`Gamma ${gammaRes.status}`);
 
     const raw = await gammaRes.json();
-
     const markets = raw.map((m) => {
       let outcomePrices = null;
       let outcomes = null;
@@ -29,8 +27,16 @@ export default async function handler(req, res) {
         ? `https://polymarket.com/event/${eventSlug}`
         : `https://polymarket.com/market/${m.slug}`;
 
+      // Get token ID for orderbook (usually the first one is "Yes")
+      let tokenId = null;
+      try {
+        const tokens = typeof m.clobTokenIds === 'string' ? JSON.parse(m.clobTokenIds) : m.clobTokenIds;
+        if (Array.isArray(tokens) && tokens.length > 0) tokenId = tokens[0];
+      } catch (_) {}
+
       return {
         condition_id: m.conditionId,
+        token_id: tokenId,
         question: m.question,
         slug: m.slug,
         poly_url: polyUrl,
