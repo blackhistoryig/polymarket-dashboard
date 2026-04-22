@@ -13,7 +13,7 @@ const fmtPct = (n) => {
   if (n === null || n === undefined || n === '') return 'N/A';
   const v = parseFloat(n);
   if (isNaN(v)) return 'N/A';
-  return (v * 100).toFixed(0) + '%';
+  return (v * 100).toFixed(1) + '%';
 };
 
 export default function Dashboard() {
@@ -23,22 +23,36 @@ export default function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [filter, setFilter] = useState('');
   const [sortBy, setSortBy] = useState('volume');
+  
+  // Modal & Detail State
+  const [selectedMarket, setSelectedMarket] = useState(null);
+  const [details, setDetails] = useState({ orderbook: null, trades: [], loading: false });
 
   const loadData = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(true); setError(null);
       const res = await fetch('/api/markets');
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Markets fetch failed');
       setMarkets(data.results || []);
       setLastUpdated(new Date());
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
   }, []);
+
+  const loadDetails = async (m) => {
+    setDetails({ orderbook: null, trades: [], loading: true });
+    try {
+      const [obRes, trRes] = await Promise.all([
+        fetch(`/api/orderbook?slug=\${m.market_slug}`),
+        fetch(`/api/trades?slug=\${m.market_slug}`)
+      ]);
+      const [obData, trData] = await Promise.all([obRes.json(), trRes.json()]);
+      setDetails({ orderbook: obData.results, trades: trData.results, loading: false });
+    } catch (e) {
+      console.error(e);
+      setDetails(prev => ({ ...prev, loading: false }));
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -61,119 +75,168 @@ export default function Dashboard() {
     });
 
   const totalVol = markets.reduce((s, m) => s + (parseFloat(m.volume_total) || 0), 0);
-  const withPrices = markets.filter((m) => getYesPrice(m) !== null).length;
 
   return (
-    <>
-      <Head><title>Polymarket Live Dashboard</title></Head>
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: '#fff', fontFamily: "'Segoe UI', sans-serif" }}>
+    <div style={{ background: '#0a0b0d', color: '#fff', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <Head>
+        <title>Polymarket Live Dashboard</title>
+        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+      </Head>
 
-        {/* Header */}
-        <div style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 20px' }}>
+        <header style={{ marginBottom: 40, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Polymarket Live Dashboard</h1>
-            <p style={{ margin: '4px 0 0', fontSize: 12, opacity: 0.5 }}>Powered by Falcon API + Polymarket Gamma</p>
+            <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, letterSpacing: '-0.02em' }}>Polymarket Live Dashboard</h1>
+            <p style={{ margin: '8px 0 0', fontSize: 14, opacity: 0.5 }}>Falcon API + Polymarket Analytics</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {lastUpdated && <span style={{ fontSize: 12, opacity: 0.5 }}>Updated {lastUpdated.toLocaleTimeString()}</span>}
-            <button onClick={loadData} disabled={loading} style={{ background: loading ? 'rgba(255,255,255,0.1)' : 'rgba(99,102,241,0.9)', border: 'none', borderRadius: 8, color: '#fff', padding: '8px 18px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600 }}>
-              {loading ? 'Loading...' : 'Refresh'}
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+             {lastUpdated && <span style={{ fontSize: 12, opacity: 0.4 }}>Updated {lastUpdated.toLocaleTimeString()}</span>}
+             <button onClick={loadData} disabled={loading} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                {loading ? 'Refreshing...' : 'Refresh Now'}
+             </button>
           </div>
+        </header>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 40 }}>
+           {[
+             { label: 'Total Volume', value: fmt$(totalVol) },
+             { label: 'Active Markets', value: markets.length },
+             { label: 'With Live Prices', value: markets.filter(m => getYesPrice(m) !== null).length },
+             { label: 'Refresh Rate', value: '60s' }
+           ].map((s, i) => (
+             <div key={i} style={{ background: '#16181d', padding: '20px 24px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ fontSize: 12, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{s.label}</div>
+               <div style={{ fontSize: 24, fontWeight: 700 }}>{s.value}</div>
+             </div>
+           ))}
         </div>
 
-        {/* Stats */}
-        <div style={{ display: 'flex', gap: 16, padding: '20px 32px', flexWrap: 'wrap' }}>
-          {[
-            { label: 'Total Volume', value: fmt$(totalVol) },
-            { label: 'Active Markets', value: markets.length },
-            { label: 'With Live Prices', value: withPrices },
-            { label: 'Auto-refresh', value: '60s' },
-          ].map((s) => (
-            <div key={s.label} style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 20px', flex: '1 1 140px' }}>
-              <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4 }}>{s.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Controls */}
-        <div style={{ display: 'flex', gap: 12, padding: '0 32px 20px', flexWrap: 'wrap' }}>
-          <input placeholder="Search markets..." value={filter} onChange={(e) => setFilter(e.target.value)}
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', padding: '8px 14px', fontSize: 13, flex: '1 1 250px', outline: 'none' }} />
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', padding: '8px 14px', fontSize: 13 }}>
-            <option value="volume">Sort: Volume</option>
-            <option value="endDate">Sort: End Date</option>
+        <div style={{ marginBottom: 32, display: 'flex', gap: 12 }}>
+          <input 
+            placeholder=\"Search markets...\" 
+            value={filter} 
+            onChange={e => setFilter(e.target.value)}
+            style={{ flex: 1, background: '#16181d', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: 10, color: '#fff', fontSize: 15 }}
+          />
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ background: '#16181d', border: '1px solid rgba(255,255,255,0.1)', padding: '0 16px', borderRadius: 10, color: '#fff' }}>
+            <option value=\"volume\">Sort by Volume</option>
+            <option value=\"endDate\">Sort by End Date</option>
           </select>
         </div>
 
-        {error && (
-          <div style={{ margin: '0 32px 20px', background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 10, padding: '12px 16px', fontSize: 13 }}>Error: {error}</div>
-        )}
+        {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: 16, borderRadius: 12, marginBottom: 20 }}>{error}</div>}
 
-        {loading && markets.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', opacity: 0.5 }}>Loading markets...</div>
-        ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', opacity: 0.5 }}>No markets found</div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16, padding: '0 32px 40px' }}>
-            {filtered.map((m, i) => {
-              const yesPrice = getYesPrice(m);
-              const noPrice = yesPrice !== null ? 1 - yesPrice : null;
-              const vol = parseFloat(m.volume_total) || 0;
-              const yesPct = yesPrice !== null ? yesPrice * 100 : null;
-              const endDate = m.end_date ? new Date(m.end_date).toLocaleDateString() : 'N/A';
-              const barColor = yesPct !== null ? (yesPct > 60 ? '#22c55e' : yesPct < 40 ? '#ef4444' : '#f59e0b') : '#6366f1';
-
-              return (
-                <div key={m.condition_id || i}
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, padding: 18, transition: 'transform 0.15s' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.border = '1px solid rgba(255,255,255,0.25)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.border = '1px solid rgba(255,255,255,0.1)'; }}>
-
-                  <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.4, marginBottom: 14, minHeight: 38 }}>{m.question || 'Unknown Market'}</div>
-
-                  {yesPct !== null && (
-                    <div style={{ marginBottom: 14 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, opacity: 0.6, marginBottom: 5 }}>
-                        <span>{m.side_a_outcome || 'YES'}</span>
-                        <span>{m.side_b_outcome || 'NO'}</span>
-                      </div>
-                      <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 6, height: 8, overflow: 'hidden', position: 'relative' }}>
-                        <div style={{ width: yesPct + '%', height: '100%', background: barColor, borderRadius: 6, transition: 'width 0.5s ease' }} />
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4 }}>
-                        <span style={{ color: barColor, fontWeight: 700 }}>{fmtPct(yesPrice)}</span>
-                        <span style={{ opacity: 0.6 }}>{fmtPct(noPrice)}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 10px' }}>
-                      <div style={{ fontSize: 10, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Volume</div>
-                      <div style={{ fontSize: 15, fontWeight: 700, marginTop: 2 }}>{fmt$(vol)}</div>
-                    </div>
-                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 10px' }}>
-                      <div style={{ fontSize: 10, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ends</div>
-                      <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{endDate}</div>
-                    </div>
-                    <div style={{ background: yesPrice !== null ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.04)', border: yesPrice !== null ? '1px solid rgba(34,197,94,0.3)' : 'none', borderRadius: 8, padding: '8px 10px' }}>
-                      <div style={{ fontSize: 10, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{m.side_a_outcome || 'YES'}</div>
-                      <div style={{ fontSize: 16, fontWeight: 700, marginTop: 2, color: yesPrice !== null ? '#4ade80' : '#666' }}>{yesPrice !== null ? fmtPct(yesPrice) : 'N/A'}</div>
-                    </div>
-                    <div style={{ background: noPrice !== null ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.04)', border: noPrice !== null ? '1px solid rgba(239,68,68,0.3)' : 'none', borderRadius: 8, padding: '8px 10px' }}>
-                      <div style={{ fontSize: 10, opacity: 0.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{m.side_b_outcome || 'NO'}</div>
-                      <div style={{ fontSize: 16, fontWeight: 700, marginTop: 2, color: noPrice !== null ? '#f87171' : '#666' }}>{noPrice !== null ? fmtPct(noPrice) : 'N/A'}</div>
-                    </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
+          {filtered.map((m, i) => {
+            const yesPrice = getYesPrice(m);
+            const noPrice = yesPrice !== null ? 1 - yesPrice : null;
+            return (
+              <div 
+                key={i} 
+                onClick={() => { setSelectedMarket(m); loadDetails(m); }}
+                style={{ background: '#16181d', padding: 24, borderRadius: 16, border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'all 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+              >
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20, lineHeight: 1.4, minHeight: 44 }}>{m.question}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, opacity: 0.5, marginBottom: 4 }}>YES PRICE</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: '#22c55e' }}>{fmtPct(yesPrice)}</div>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'right' }}>
+                    <div style={{ fontSize: 11, opacity: 0.5, marginBottom: 4 }}>VOLUME</div>
+                    <div style={{ fontSize: 18, fontWeight: 600 }}>{fmt$(m.volume_total)}</div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div style={{ height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden' }}>
+                   <div style={{ width: \`\${(yesPrice || 0) * 100}%\`, height: '100%', background: '#22c55e' }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </>
+
+      {/* Modal Overlay */}
+      {selectedMarket && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+           <div style={{ background: '#16181d', width: '100%', maxWidth: 840, maxHeight: '90vh', overflow: 'hidden', borderRadius: 24, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column' }}>
+             <div style={{ padding: 32, borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}>
+                <button onClick={() => setSelectedMarket(null)} style={{ position: 'absolute', top: 24, right: 24, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', opacity: 0.5 }}>&times;</button>
+                <h2 style={{ margin: '0 0 8px', fontSize: 22, paddingRight: 40 }}>{selectedMarket.question}</h2>
+                <div style={{ display: 'flex', gap: 20, fontSize: 14, opacity: 0.6 }}>
+                   <span>Volume: {fmt$(selectedMarket.volume_total)}</span>
+                   <span>Ends: {new Date(selectedMarket.end_date).toLocaleDateString()}</span>
+                </div>
+             </div>
+             
+             <div style={{ flex: 1, overflowY: 'auto', padding: 32, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
+                {/* Orderbook Column */}
+                <div>
+                   <h3 style={{ fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.5, marginBottom: 20 }}>Live Orderbook</h3>
+                   {details.loading ? <div style={{ opacity: 0.3 }}>Fetching orderbook...</div> : (
+                     <div>
+                        {/* Asks (Sells) */}
+                        <div style={{ marginBottom: 4 }}>
+                           {details.orderbook?.asks?.slice(0, 8).reverse().map((a, i) => (
+                             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
+                               <span style={{ color: '#ef4444' }}>{parseFloat(a.price).toFixed(3)}</span>
+                               <span style={{ opacity: 0.4 }}>{parseFloat(a.size).toFixed(0)}</span>
+                             </div>
+                           ))}
+                        </div>
+                        {/* Spread / Mid */}
+                        <div style={{ padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', margin: '8px 0', textAlign: 'center', fontSize: 18, fontWeight: 700 }}>
+                           {fmtPct(getYesPrice(selectedMarket))}
+                        </div>
+                        {/* Bids (Buys) */}
+                        <div>
+                           {details.orderbook?.bids?.slice(0, 8).map((b, i) => (
+                             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
+                               <span style={{ color: '#22c55e' }}>{parseFloat(b.price).toFixed(3)}</span>
+                               <span style={{ opacity: 0.4 }}>{parseFloat(b.size).toFixed(0)}</span>
+                             </div>
+                           ))}
+                        </div>
+                        {!details.orderbook && <div style={{ fontSize: 12, opacity: 0.3 }}>No orderbook data available for this market.</div>}
+                     </div>
+                   )}
+                </div>
+
+                {/* Trades Column */}
+                <div>
+                   <h3 style={{ fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.5, marginBottom: 20 }}>Recent Trades</h3>
+                   {details.loading ? <div style={{ opacity: 0.3 }}>Fetching trades...</div> : (
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {details.trades?.slice(0, 15).map((t, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, background: 'rgba(255,255,255,0.02)', padding: '8px 12px', borderRadius: 8 }}>
+                             <span style={{ color: t.side === 'BUY' ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{t.side}</span>
+                             <span>{parseFloat(t.price).toFixed(3)}</span>
+                             <span style={{ opacity: 0.4 }}>{fmt$(t.size * t.price)}</span>
+                          </div>
+                        ))}
+                        {(!details.trades || details.trades.length === 0) && <div style={{ fontSize: 12, opacity: 0.3 }}>No recent trades found.</div>}
+                     </div>
+                   )}
+                </div>
+             </div>
+             
+             <div style={{ padding: 24, borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'right' }}>
+                <a href={selectedMarket.poly_url || `https://polymarket.com/event/\${selectedMarket.slug}`} target=\"_blank\" rel=\"noreferrer\" style={{ color: '#3b82f6', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>View on Polymarket &rarr;</a>
+             </div>
+           </div>
+        </div>
+      )}
+
+      <style jsx global>{\`
+        body { margin: 0; background: #0a0b0d; }
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); borderRadius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+      \`}</style>
+    </div>
   );
 }
