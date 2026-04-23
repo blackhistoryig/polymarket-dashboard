@@ -6,16 +6,21 @@ export default async function handler(req, res) {
   if (!slug && !condition_id) return res.status(400).json({ error: 'Missing slug or condition_id' });
 
   try {
+    const now = Math.floor(Date.now() / 1000);
+    const sevenDaysAgo = now - (7 * 24 * 60 * 60);
+
     const fRes = await fetch(
       'https://narrative.agent.heisenberg.so/api/v2/semantic/retrieve/parameterized',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer \${apiKey}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
           agent_id: 556,
           params: {
             market_slug: slug || 'ALL',
-            condition_id: condition_id || 'ALL'
+            condition_id: condition_id || 'ALL',
+            start_time: String(sevenDaysAgo),
+            end_time: String(now)
           },
           pagination: { limit: 20 },
           formatter_config: { format_type: 'raw' },
