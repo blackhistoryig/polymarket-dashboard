@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 
+// Format currency
 const fmt$ = (n) => {
   if (!n && n !== 0) return '$0';
   const v = parseFloat(n);
@@ -9,6 +10,7 @@ const fmt$ = (n) => {
   return '$' + v.toFixed(0);
 };
 
+// Format percentage
 const fmtPct = (n) => {
   if (n === null || n === undefined || n === '') return 'N/A';
   const v = parseFloat(n);
@@ -23,18 +25,17 @@ export default function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [filter, setFilter] = useState('');
   const [sortBy, setSortBy] = useState('volume');
-
-  const [selectedMarket, setSelectedMarket] = useState(null);
-  const [details, setDetails] = useState({ orderbook: null, trades: [], loading: false });
+  const [dataSource, setDataSource] = useState('gamma');
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/markets');
+      const res = await fetch('/api/markets?limit=50');
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Markets fetch failed');
       setMarkets(data.results || []);
+      setDataSource(data.source || 'gamma');
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (e) {
       setError(e.message);
@@ -43,207 +44,245 @@ export default function Dashboard() {
     }
   }, []);
 
-  const loadDetails = async (m) => {
-    setDetails({ orderbook: null, trades: [], loading: true });
-    try {
-      // Orderbook needs token_id, Trades can use slug or condition_id
-      const [obRes, trRes] = await Promise.all([
-        fetch(`/api/orderbook?token_id=${m.token_id}`),
-        fetch(`/api/trades?slug=${m.slug}&condition_id=${m.condition_id}`)
-      ]);
-      const [obData, trData] = await Promise.all([obRes.json(), trRes.json()]);
-      
-      setDetails({
-        orderbook: obData || null,
-        trades: trData.results || [],
-        loading: false
-      });
-    } catch (e) {
-      console.error('Failed to load details:', e);
-      setDetails(prev => ({ ...prev, loading: false }));
-    }
-  };
-
   useEffect(() => {
     loadData();
-    const t = setInterval(loadData, 60000);
+    const t = setInterval(loadData, 60000); // Auto-refresh every 60 seconds
     return () => clearInterval(t);
   }, [loadData]);
 
   const filteredMarkets = markets
     .filter(m => m.question.toLowerCase().includes(filter.toLowerCase()))
     .sort((a, b) => {
-      if (sortBy === 'volume') return b.volume_total - a.volume_total;
-      if (sortBy === 'newest') return new Date(b.start_date) - new Date(a.start_date);
+      if (sortBy === 'volume') return (b.volume_total || 0) - (a.volume_total || 0);
+      if (sortBy === 'liquidity') return (b.liquidity || 0) - (a.liquidity || 0);
+      if (sortBy === 'endDate') {
+        const dateA = new Date(a.end_date);
+        const dateB = new Date(b.end_date);
+        return dateA - dateB;
+      }
       return 0;
     });
 
+  // Calculate total volume and 24h volume
+  const totalVolume = markets.reduce((sum, m) => sum + (parseFloat(m.volume_total) || 0), 0);
+  const volume24h = markets.reduce((sum, m) => sum + (parseFloat(m.volume_24h) || 0), 0);
+
   return (
-    <div style={{ background: '#0a0b0d', color: '#fff', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ background: '#0d0f14', minHeight: '100vh', color: '#fff', padding: '20px' }}>
       <Head>
         <title>Polymarket Live Dashboard</title>
       </Head>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 20px' }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800 }}>Polymarket Live Dashboard</h1>
-            <p style={{ margin: '8px 0 0', opacity: 0.6 }}>Real-time Orderbook & Trades (Falcon API)</p>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <button 
-              onClick={loadData}
-              disabled={loading}
-              style={{
-                background: '#2563eb', color: '#fff', border: 'none', padding: '12px 24px',
-                borderRadius: 8, cursor: 'pointer', fontWeight: 600, transition: '0.2s'
-              }}
-            >
-              {loading ? 'Refreshing...' : 'Refresh'}
-            </button>
-            {lastUpdated && <p style={{ fontSize: 12, opacity: 0.4, marginTop: 8 }}>Updated: {lastUpdated}</p>}
-          </div>
-        </header>
+      {/* Header */}
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: 8, textAlign: 'center' }}>Polymarket Live Dashboard</h1>
+        <p style={{ textAlign: 'center', color: '#888', marginBottom: 30 }}>Real-time Orderbook & Trades (Falcon API)</p>
 
-        {error && (
-          <div style={{ background: '#ef444422', border: '1px solid #ef4444', color: '#ef4444', padding: 16, borderRadius: 8, marginBottom: 20 }}>
-            Error: {error}
+        {/* Stats Bar */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 16,
+          marginBottom: 30
+        }}>
+          <div style={{ background: '#16181d', border: '1px solid #333', borderRadius: 12, padding: 20 }}>
+            <div style={{ fontSize: '0.875rem', color: '#888', marginBottom: 8 }}>Total Volume</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#4f9aff' }}>{fmt$(totalVolume)}</div>
           </div>
-        )}
+          <div style={{ background: '#16181d', border: '1px solid #333', borderRadius: 12, padding: 20 }}>
+            <div style={{ fontSize: '0.875rem', color: '#888', marginBottom: 8 }}>24h Volume</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#4f9aff' }}>{fmt$(volume24h)}</div>
+          </div>
+          <div style={{ background: '#16181d', border: '1px solid #333', borderRadius: 12, padding: 20 }}>
+            <div style={{ fontSize: '0.875rem', color: '#888', marginBottom: 8 }}>Active Markets</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#4f9aff' }}>{markets.length}</div>
+          </div>
+          <div style={{ background: '#16181d', border: '1px solid #333', borderRadius: 12, padding: 20 }}>
+            <div style={{ fontSize: '0.875rem', color: '#888', marginBottom: 8 }}>Data Source</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#10b981', textTransform: 'capitalize' }}>{dataSource}</div>
+          </div>
+        </div>
 
-        <div style={{ display: 'flex', gap: 16, marginBottom: 30 }}>
-          <input 
+        {/* Controls */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={loadData}
+            style={{
+              background: '#4f9aff',
+              color: '#fff',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontSize: 16,
+              fontWeight: 600
+            }}
+          >
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
+          {lastUpdated && (
+            <span style={{ color: '#888', fontSize: '0.875rem' }}>Updated: {lastUpdated}</span>
+          )}
+          <div style={{ flex: 1 }} />
+          <input
             type="text"
             placeholder="Search markets..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             style={{
-              flex: 1, background: '#16181d', border: '1px solid #333', color: '#fff',
-              padding: '12px 16px', borderRadius: 8, fontSize: 16
+              flex: 1,
+              minWidth: 200,
+              background: '#16181d',
+              border: '1px solid #333',
+              color: '#fff',
+              padding: '12px 16px',
+              borderRadius: 8,
+              fontSize: 16
             }}
           />
-          <select 
+          <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             style={{
-              background: '#16181d', border: '1px solid #333', color: '#fff',
-              padding: '0 16px', borderRadius: 8, cursor: 'pointer'
+              background: '#16181d',
+              border: '1px solid #333',
+              color: '#fff',
+              padding: '12px 16px',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontSize: 16
             }}
           >
             <option value="volume">Top Volume</option>
-            <option value="newest">Newest</option>
+            <option value="liquidity">Top Liquidity</option>
+            <option value="endDate">Earliest End Date</option>
           </select>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 20 }}>
-          {filteredMarkets.map((m, i) => (
-            <div 
-              key={i}
-              onClick={() => { setSelectedMarket(m); loadDetails(m); }}
-              style={{
-                background: '#16181d', border: '1px solid #333', borderRadius: 12,
-                padding: 20, cursor: 'pointer', transition: '0.2s transform',
-                ':hover': { transform: 'translateY(-2px)', borderColor: '#444' }
-              }}
-            >
-              <h3 style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.4 }}>{m.question}</h3>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#22c55e', fontWeight: 700, fontSize: 20 }}>
-                  {fmtPct(m.last_trade_price)}
-                </span>
-                <span style={{ opacity: 0.5, fontSize: 14 }}>
-                  Vol: {fmt$(m.volume_total)}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {selectedMarket && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100, padding: 20, backdropFilter: 'blur(4px)'
-        }}>
-          <div style={{
-            background: '#16181d', width: '100%', maxWidth: 900, maxHeight: '90vh',
-            overflow: 'auto', borderRadius: 20, border: '1px solid #333',
-            padding: 40, position: 'relative'
-          }}>
-            <button 
-              onClick={() => setSelectedMarket(null)}
-              style={{
-                position: 'absolute', top: 20, right: 20, background: '#333',
-                border: 'none', color: '#fff', width: 32, height: 32,
-                borderRadius: '50%', cursor: 'pointer', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', fontSize: 20
-              }}
-            >
-              &times;
-            </button>
-            
-            <h2 style={{ marginTop: 0, paddingRight: 40 }}>{selectedMarket.question}</h2>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 40, marginTop: 30 }}>
-              <div>
-                <h3 style={{ borderBottom: '1px solid #333', paddingBottom: 10 }}>Orderbook</h3>
-                {details.loading ? <p>Loading orderbook...</p> : (
-                  <div>
-                    {/* Asks (Sells) in Red */}
-                    <div style={{ color: '#ef4444' }}>
-                      {details.orderbook?.asks?.slice(0, 5).reverse().map((a, j) => (
-                        <div key={j} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 14 }}>
-                          <span>{parseFloat(a.price).toFixed(3)}</span>
-                          <span style={{ opacity: 0.6 }}>{Math.round(a.size)}</span>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div style={{ height: 1, background: '#333', margin: '15px 0' }}></div>
-                    
-                    {/* Bids (Buys) in Green */}
-                    <div style={{ color: '#22c55e' }}>
-                      {details.orderbook?.bids?.slice(0, 5).map((b, j) => (
-                        <div key={j} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 14 }}>
-                          <span>{parseFloat(b.price).toFixed(3)}</span>
-                          <span style={{ opacity: 0.6 }}>{Math.round(b.size)}</span>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {!details.orderbook && !details.loading && <p style={{ opacity: 0.5 }}>No orderbook data</p>}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <h3 style={{ borderBottom: '1px solid #333', paddingBottom: 10 }}>Recent Trades</h3>
-                {details.loading ? <p>Loading trades...</p> : (
-                  <div style={{ maxHeight: 400, overflow: 'auto' }}>
-                    {details.trades?.slice(0, 20).map((t, j) => (
-                      <div key={j} style={{ 
-                        display: 'flex', justifyContent: 'space-between', 
-                        padding: '8px 0', borderBottom: '1px solid #ffffff05', fontSize: 13
-                      }}>
-                        <span style={{ 
-                          color: t.side === 'BUY' ? '#22c55e' : '#ef4444', 
-                          fontWeight: 700, width: 40 
-                        }}>
-                          {t.side}
-                        </span>
-                        <span>{parseFloat(t.price).toFixed(3)}</span>
-                        <span style={{ opacity: 0.5 }}>{fmt$(t.size * t.price)}</span>
-                      </div>
-                    ))}
-                    {(!details.trades || details.trades.length === 0) && <p style={{ opacity: 0.5 }}>No recent trades</p>}
-                  </div>
-                )}
-              </div>
-            </div>
+        {error && (
+          <div style={{ background: '#dc2626', color: '#fff', padding: 16, borderRadius: 8, marginBottom: 24 }}>
+            Error: {error}
           </div>
+        )}
+
+        {/* Markets Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
+          gap: 20
+        }}>
+          {filteredMarkets.map((m, i) => {
+            const yesPrice = parseFloat(m.last_trade_price);
+            const noPrice = 1 - yesPrice;
+            
+            return (
+              <div
+                key={i}
+                style={{
+                  background: '#16181d',
+                  border: '1px solid #333',
+                  borderRadius: 12,
+                  padding: 20,
+                  position: 'relative',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.borderColor = '#4f9aff';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(79, 154, 255, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.borderColor = '#333';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                {/* Clickable link icon */}
+                <a
+                  href={m.poly_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    color: '#888',
+                    fontSize: '1.25rem',
+                    textDecoration: 'none',
+                    transition: 'color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#4f9aff'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#888'}
+                >
+                  ↗
+                </a>
+
+                {/* Question */}
+                <h3 style={{ fontSize: '1.125rem', marginBottom: 16, paddingRight: 40, lineHeight: 1.4 }}>
+                  {m.question}
+                </h3>
+
+                {/* YES/NO Probability Bars */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: '0.875rem', color: '#10b981' }}>YES</span>
+                    <span style={{ fontSize: '0.875rem', color: '#10b981', fontWeight: 600 }}>
+                      {fmtPct(yesPrice)}
+                    </span>
+                  </div>
+                  <div style={{ background: '#1f2937', borderRadius: 4, height: 8, overflow: 'hidden', marginBottom: 8 }}>
+                    <div style={{
+                      background: '#10b981',
+                      height: '100%',
+                      width: `${yesPrice * 100}%`,
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: '0.875rem', color: '#ef4444' }}>NO</span>
+                    <span style={{ fontSize: '0.875rem', color: '#ef4444', fontWeight: 600 }}>
+                      {fmtPct(noPrice)}
+                    </span>
+                  </div>
+                  <div style={{ background: '#1f2937', borderRadius: 4, height: 8, overflow: 'hidden' }}>
+                    <div style={{
+                      background: '#ef4444',
+                      height: '100%',
+                      width: `${noPrice * 100}%`,
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                </div>
+
+                {/* Market Stats */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: '0.875rem' }}>
+                  <div>
+                    <span style={{ color: '#888' }}>Vol: </span>
+                    <span style={{ color: '#fff', fontWeight: 600 }}>{fmt$(m.volume_total)}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: '#888' }}>Liq: </span>
+                    <span style={{ color: '#10b981', fontWeight: 600 }}>{fmt$(m.liquidity)}</span>
+                  </div>
+                  {m.spread && (
+                    <div>
+                      <span style={{ color: '#888' }}>Spread: </span>
+                      <span style={{ color: '#f59e0b', fontWeight: 600 }}>{fmtPct(m.spread)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      )}
+
+        {filteredMarkets.length === 0 && !loading && (
+          <div style={{ textAlign: 'center', padding: 60, color: '#888' }}>
+            No markets found
+          </div>
+        )}
+      </div>
     </div>
   );
 }
