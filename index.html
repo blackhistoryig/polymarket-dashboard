@@ -9,35 +9,36 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 <style>
+/* ─── DESIGN TOKENS ─────────────────────────────────────────────────── */
 :root, [data-theme="light"] {
-  --color-bg: #f7f6f2;
-  --color-surface: #f9f8f5;
-  --color-surface-2: #fbfbf9;
-  --color-surface-offset: #f3f0ec;
+  --color-bg:               #f7f6f2;
+  --color-surface:          #f9f8f5;
+  --color-surface-2:        #fbfbf9;
+  --color-surface-offset:   #f3f0ec;
   --color-surface-offset-2: #edeae5;
-  --color-surface-dynamic: #e6e4df;
-  --color-divider: #dcd9d5;
-  --color-border: #d4d1ca;
-  --color-text: #28251d;
-  --color-text-muted: #7a7974;
-  --color-text-faint: #bab9b4;
-  --color-text-inverse: #f9f8f4;
-  --color-primary: #01696f;
-  --color-primary-hover: #0c4e54;
-  --color-primary-active: #0f3638;
+  --color-surface-dynamic:  #e6e4df;
+  --color-divider:          #dcd9d5;
+  --color-border:           #d4d1ca;
+  --color-text:             #28251d;
+  --color-text-muted:       #7a7974;
+  --color-text-faint:       #bab9b4;
+  --color-text-inverse:     #f9f8f4;
+  --color-primary:          #01696f;
+  --color-primary-hover:    #0c4e54;
+  --color-primary-active:   #0f3638;
   --color-primary-highlight:#cedcd8;
-  --color-success: #437a22;
-  --color-success-hover: #2e5c10;
+  --color-success:          #437a22;
+  --color-success-hover:    #2e5c10;
   --color-success-highlight:#d4dfcc;
-  --color-error: #a12c7b;
-  --color-error-hover: #7d1e5e;
-  --color-error-highlight: #e0ced7;
-  --color-warning: #964219;
-  --color-warning-hover: #713417;
+  --color-error:            #a12c7b;
+  --color-error-hover:      #7d1e5e;
+  --color-error-highlight:  #e0ced7;
+  --color-warning:          #964219;
+  --color-warning-hover:    #713417;
   --color-warning-highlight:#ddcfc6;
-  --color-gold: #d19900;
-  --color-gold-highlight: #e9e0c6;
-  --color-orange: #da7101;
+  --color-gold:             #d19900;
+  --color-gold-highlight:   #e9e0c6;
+  --color-orange:           #da7101;
   --color-orange-highlight: #e7d7c4;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -48,11 +49,11 @@
   --shadow-sm: 0 1px 2px oklch(0.2 0.01 80 / 0.06);
   --shadow-md: 0 4px 12px oklch(0.2 0.01 80 / 0.08);
   --shadow-lg: 0 12px 32px oklch(0.2 0.01 80 / 0.12);
-  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
-  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
-  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
-  --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  --text-xs:   clamp(0.75rem,  0.7rem + 0.25vw, 0.875rem);
+  --text-sm:   clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+  --text-xl:   clamp(1.5rem,   1.2rem + 1.25vw, 2.25rem);
   --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
   --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem;
   --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
@@ -63,39 +64,41 @@
   --header-height: 56px;
 }
 [data-theme="dark"] {
-  --color-bg: #131211;
-  --color-surface: #1a1917;
-  --color-surface-2: #1f1e1c;
-  --color-surface-offset: #1d1c1a;
+  --color-bg:               #131211;
+  --color-surface:          #1a1917;
+  --color-surface-2:        #1f1e1c;
+  --color-surface-offset:   #1d1c1a;
   --color-surface-offset-2: #232220;
-  --color-surface-dynamic: #2d2c2a;
-  --color-divider: #262523;
-  --color-border: #323130;
-  --color-text: #cdccca;
-  --color-text-muted: #797876;
-  --color-text-faint: #4f4e4c;
-  --color-text-inverse: #2b2a28;
-  --color-primary: #4f98a3;
-  --color-primary-hover: #227f8b;
-  --color-primary-active: #1a626b;
+  --color-surface-dynamic:  #2d2c2a;
+  --color-divider:          #262523;
+  --color-border:           #323130;
+  --color-text:             #cdccca;
+  --color-text-muted:       #797876;
+  --color-text-faint:       #4f4e4c;
+  --color-text-inverse:     #2b2a28;
+  --color-primary:          #4f98a3;
+  --color-primary-hover:    #227f8b;
+  --color-primary-active:   #1a626b;
   --color-primary-highlight:#1e3335;
-  --color-success: #6daa45;
-  --color-success-hover: #4d8f25;
+  --color-success:          #6daa45;
+  --color-success-hover:    #4d8f25;
   --color-success-highlight:#253420;
-  --color-error: #d163a7;
-  --color-error-hover: #b9478f;
-  --color-error-highlight: #3a2030;
-  --color-warning: #bb653b;
-  --color-warning-hover: #b95525;
+  --color-error:            #d163a7;
+  --color-error-hover:      #b9478f;
+  --color-error-highlight:  #3a2030;
+  --color-warning:          #bb653b;
+  --color-warning-hover:    #b95525;
   --color-warning-highlight:#3a2415;
-  --color-gold: #e8af34;
-  --color-gold-highlight: #3a2e10;
-  --color-orange: #fdab43;
+  --color-gold:             #e8af34;
+  --color-gold-highlight:   #3a2e10;
+  --color-orange:           #fdab43;
   --color-orange-highlight: #3a2810;
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.25);
   --shadow-md: 0 4px 12px oklch(0 0 0 / 0.35);
   --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.5);
 }
+
+/* ─── BASE ─────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-text-size-adjust: none; text-size-adjust: none; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
 body { min-height: 100dvh; font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text); background: var(--color-bg); overflow-x: hidden; }
@@ -103,6 +106,8 @@ img, svg { display: block; max-width: 100%; }
 button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
 a { color: inherit; text-decoration: none; }
 :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-sm); }
+
+/* ─── LAYOUT ───────────────────────────────────────────────────────── */
 .app-layout {
   display: grid;
   grid-template-columns: var(--sidebar-width) 1fr;
@@ -146,6 +151,8 @@ a { color: inherit; text-decoration: none; }
   max-width: 1100px;
   width: 100%;
 }
+
+/* ─── SIDEBAR ──────────────────────────────────────────────────────── */
 .sidebar-logo {
   height: var(--header-height);
   display: flex;
@@ -212,6 +219,8 @@ a { color: inherit; text-decoration: none; }
   transition: color var(--transition-interactive), background var(--transition-interactive);
 }
 .theme-toggle:hover { color: var(--color-text); background: var(--color-surface-offset); }
+
+/* ─── MOBILE NAV ───────────────────────────────────────────────────── */
 .mobile-header {
   display: none;
   height: 56px;
@@ -239,6 +248,8 @@ a { color: inherit; text-decoration: none; }
   backdrop-filter: blur(2px);
 }
 .mobile-overlay.visible { display: block; }
+
+/* ─── BREADCRUMB ───────────────────────────────────────────────────── */
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -251,6 +262,8 @@ a { color: inherit; text-decoration: none; }
 .breadcrumb-item.clickable { color: var(--color-primary); cursor: pointer; transition: color var(--transition-interactive); }
 .breadcrumb-item.clickable:hover { color: var(--color-primary-hover); }
 .breadcrumb-sep { color: var(--color-text-faint); }
+
+/* ─── PAGE HEADER ──────────────────────────────────────────────────── */
 .page-header {
   display: flex;
   align-items: flex-start;
@@ -260,6 +273,8 @@ a { color: inherit; text-decoration: none; }
 }
 .page-title { font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
 .page-subtitle { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-1); }
+
+/* ─── BUTTONS ──────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -292,6 +307,8 @@ a { color: inherit; text-decoration: none; }
 .btn-sm { padding: var(--space-1) var(--space-3); min-height: 28px; font-size: var(--text-xs); }
 .btn-lg { padding: var(--space-3) var(--space-6); min-height: 44px; }
 .btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+
+/* ─── CARDS ────────────────────────────────────────────────────────── */
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -307,6 +324,8 @@ a { color: inherit; text-decoration: none; }
 }
 .card-title { font-size: var(--text-sm); font-weight: 600; color: var(--color-text); }
 .card-subtitle { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
+
+/* ─── KPI GRID ─────────────────────────────────────────────────────── */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -349,6 +368,8 @@ a { color: inherit; text-decoration: none; }
 .kpi-delta.up { color: var(--color-success); }
 .kpi-delta.down { color: var(--color-error); }
 .kpi-delta.neutral { color: var(--color-text-muted); }
+
+/* ─── SCORE BADGE ──────────────────────────────────────────────────── */
 .score-badge {
   display: inline-flex;
   flex-direction: column;
@@ -379,6 +400,8 @@ a { color: inherit; text-decoration: none; }
 .score-moderate { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-highlight); }
 .score-risky { border-color: var(--color-warning); color: var(--color-warning); background: var(--color-warning-highlight); }
 .score-poor { border-color: var(--color-error); color: var(--color-error); background: var(--color-error-highlight); }
+
+/* ─── VERDICT BADGE ────────────────────────────────────────────────── */
 .verdict {
   display: inline-flex;
   align-items: center;
@@ -394,6 +417,8 @@ a { color: inherit; text-decoration: none; }
 .verdict-moderate { background: var(--color-primary-highlight); color: var(--color-primary); }
 .verdict-risky { background: var(--color-warning-highlight); color: var(--color-warning); }
 .verdict-poor { background: var(--color-error-highlight); color: var(--color-error); }
+
+/* ─── FLAG CHIPS ───────────────────────────────────────────────────── */
 .flag-chip {
   display: inline-flex;
   align-items: center;
@@ -408,6 +433,8 @@ a { color: inherit; text-decoration: none; }
 .flag-yellow { background: var(--color-warning-highlight); color: var(--color-warning); border-color: oklch(from var(--color-warning) l c h / 0.25); }
 .flag-green { background: var(--color-success-highlight); color: var(--color-success); border-color: oklch(from var(--color-success) l c h / 0.25); }
 .flag-wrap { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* ─── WALLET HEADER COMPONENT ──────────────────────────────────────── */
 .wallet-header {
   display: flex;
   align-items: flex-start;
@@ -436,6 +463,8 @@ a { color: inherit; text-decoration: none; }
 .wallet-address:hover { border-color: var(--color-primary); color: var(--color-text); }
 .wallet-name { font-size: var(--text-base); font-weight: 600; margin-bottom: var(--space-2); }
 .wallet-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); flex-wrap: wrap; }
+
+/* ─── SEARCH BOX ───────────────────────────────────────────────────── */
 .search-box {
   position: relative;
   display: flex;
@@ -468,9 +497,11 @@ a { color: inherit; text-decoration: none; }
   transition: background var(--transition-interactive);
 }
 .search-btn:hover { background: var(--color-primary-hover); }
+
+/* ─── SKELETON ─────────────────────────────────────────────────────── */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }
 .skeleton {
   background: linear-gradient(90deg,
@@ -484,10 +515,12 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   .skeleton { animation: none; background: var(--color-surface-offset); }
 }
-.skel-text { height: 14px; margin-bottom: var(--space-2); border-radius: var(--radius-sm); }
-.skel-h { height: 22px; margin-bottom: var(--space-3); border-radius: var(--radius-sm); }
-.skel-card { height: 80px; border-radius: var(--radius-lg); }
+.skel-text  { height: 14px; margin-bottom: var(--space-2); border-radius: var(--radius-sm); }
+.skel-h     { height: 22px; margin-bottom: var(--space-3); border-radius: var(--radius-sm); }
+.skel-card  { height: 80px; border-radius: var(--radius-lg); }
 .skel-badge { width: 88px; height: 88px; border-radius: var(--radius-xl); }
+
+/* ─── STATES ───────────────────────────────────────────────────────── */
 .state-box {
   display: flex;
   flex-direction: column;
@@ -500,6 +533,8 @@ a { color: inherit; text-decoration: none; }
 .state-box .state-icon { width: 48px; height: 48px; color: var(--color-text-faint); }
 .state-box h3 { font-size: var(--text-base); font-weight: 600; color: var(--color-text); }
 .state-box p { font-size: var(--text-sm); max-width: 36ch; }
+
+/* ─── TOOLTIP ──────────────────────────────────────────────────────── */
 [data-tip] { position: relative; cursor: help; }
 [data-tip]::after {
   content: attr(data-tip);
@@ -525,6 +560,8 @@ a { color: inherit; text-decoration: none; }
   box-shadow: var(--shadow-md);
 }
 [data-tip]:hover::after { opacity: 1; }
+
+/* ─── TABLE ────────────────────────────────────────────────────────── */
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th {
   font-size: var(--text-xs);
@@ -549,7 +586,11 @@ a { color: inherit; text-decoration: none; }
 .data-table tbody tr:hover { background: var(--color-surface-offset); }
 .wallet-link { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-primary); transition: color var(--transition-interactive); }
 .wallet-link:hover { color: var(--color-primary-hover); }
+
+/* ─── DIVIDER ──────────────────────────────────────────────────────── */
 .divider { height: 1px; background: var(--color-divider); margin: var(--space-6) 0; }
+
+/* ─── SECTION HEADING ──────────────────────────────────────────────── */
 .section-heading {
   font-size: var(--text-xs);
   font-weight: 700;
@@ -567,6 +608,8 @@ a { color: inherit; text-decoration: none; }
   height: 1px;
   background: var(--color-divider);
 }
+
+/* ─── ONBOARDING ───────────────────────────────────────────────────── */
 .onboarding-card {
   background: color-mix(in oklch, var(--color-primary) 6%, var(--color-surface));
   border: 1px solid color-mix(in oklch, var(--color-primary) 20%, var(--color-border));
@@ -592,6 +635,8 @@ a { color: inherit; text-decoration: none; }
   transition: border-color var(--transition-interactive);
 }
 .example-wallet:hover { border-color: var(--color-primary); }
+
+/* ─── FALLBACK BANNER ──────────────────────────────────────────────── */
 .fallback-banner {
   background: var(--color-warning-highlight);
   border: 1px solid oklch(from var(--color-warning) l c h / 0.3);
@@ -604,6 +649,8 @@ a { color: inherit; text-decoration: none; }
   gap: var(--space-3);
   margin-bottom: var(--space-5);
 }
+
+/* ─── WATCHLIST PLACEHOLDER ────────────────────────────────────────── */
 .placeholder-pill {
   display: inline-flex;
   align-items: center;
@@ -615,8 +662,12 @@ a { color: inherit; text-decoration: none; }
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
+
+/* ─── VIEWS (hidden/shown via JS) ──────────────────────────────────── */
 .view { display: none; }
 .view.active { display: block; }
+
+/* ─── RESPONSIVE ───────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .app-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
   .app-sidebar { transform: translateX(-100%); }
@@ -633,6 +684,8 @@ a { color: inherit; text-decoration: none; }
   .kpi-grid { grid-template-columns: 1fr 1fr; }
   .btn-lg { min-height: 44px; }
 }
+
+/* ─── UTILS ────────────────────────────────────────────────────────── */
 .mono { font-family: var(--font-mono); }
 .text-muted { color: var(--color-text-muted); }
 .text-faint { color: var(--color-text-faint); }
@@ -652,7 +705,11 @@ a { color: inherit; text-decoration: none; }
 </style>
 </head>
 <body>
+
+<!-- ── MOBILE OVERLAY ─────────────────────────────────────────────── -->
 <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
+
+<!-- ── MOBILE HEADER ──────────────────────────────────────────────── -->
 <div class="mobile-header">
   <button class="mobile-menu-btn" onclick="openSidebar()" aria-label="Open menu">
     <i data-lucide="menu" width="20" height="20"></i>
@@ -675,6 +732,8 @@ a { color: inherit; text-decoration: none; }
 </div>
 
 <div class="app-layout">
+
+  <!-- ── SIDEBAR ──────────────────────────────────────────────────── -->
   <aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Main navigation">
     <div class="sidebar-logo">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-label="Logo">
@@ -719,7 +778,10 @@ a { color: inherit; text-decoration: none; }
     </div>
   </aside>
 
+  <!-- ── MAIN ─────────────────────────────────────────────────────── -->
   <main class="app-main">
+
+    <!-- Topbar with breadcrumb -->
     <div class="app-topbar" id="appTopbar">
       <div class="breadcrumb" id="breadcrumb" role="navigation" aria-label="Breadcrumb"></div>
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
@@ -731,6 +793,8 @@ a { color: inherit; text-decoration: none; }
     </div>
 
     <div class="app-content" id="appContent">
+
+      <!-- ═══════════════════════════════════════════ VIEW: DASHBOARD -->
       <div class="view active" id="view-dashboard">
         <div class="page-header">
           <div>
@@ -749,30 +813,44 @@ a { color: inherit; text-decoration: none; }
           </div>
         </div>
 
+        <!-- Platform KPIs -->
         <div class="section-heading">Platform Overview</div>
         <div class="kpi-grid" style="margin-bottom:var(--space-8);">
           <div class="kpi-card">
-            <div class="kpi-label"><i data-lucide="users" width="12" height="12"></i>Active Traders</div>
+            <div class="kpi-label">
+              <i data-lucide="users" width="12" height="12"></i>
+              Active Traders
+            </div>
             <div class="kpi-value">24,810</div>
             <div class="kpi-delta up"><i data-lucide="trending-up" width="11" height="11"></i>+3.2% 7d</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label"><i data-lucide="activity" width="12" height="12"></i>Volume 24h</div>
+            <div class="kpi-label">
+              <i data-lucide="activity" width="12" height="12"></i>
+              Volume 24h
+            </div>
             <div class="kpi-value">$8.3M</div>
             <div class="kpi-delta up"><i data-lucide="trending-up" width="11" height="11"></i>+12.4%</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label"><i data-lucide="bar-chart-2" width="12" height="12"></i>Open Markets</div>
+            <div class="kpi-label">
+              <i data-lucide="bar-chart-2" width="12" height="12"></i>
+              Open Markets
+            </div>
             <div class="kpi-value">1,492</div>
             <div class="kpi-delta neutral">—</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label"><i data-lucide="trophy" width="12" height="12"></i>Elite Wallets</div>
+            <div class="kpi-label">
+              <i data-lucide="trophy" width="12" height="12"></i>
+              Elite Wallets
+            </div>
             <div class="kpi-value">87</div>
             <div class="kpi-delta up"><i data-lucide="trending-up" width="11" height="11"></i>+5 this wk</div>
           </div>
         </div>
 
+        <!-- Leaderboard -->
         <div class="card" style="padding:0;overflow:hidden;">
           <div class="card-header" style="padding:var(--space-5);padding-bottom:var(--space-4);border-bottom:1px solid var(--color-border);">
             <div>
@@ -805,7 +883,10 @@ a { color: inherit; text-decoration: none; }
         </div>
       </div>
 
+      <!-- ═══════════════════════════════════════ VIEW: WALLET LOOKUP -->
       <div class="view" id="view-wallet-lookup">
+
+        <!-- Onboarding (shown when no wallet loaded) -->
         <div id="onboardingSection">
           <div class="page-header">
             <div>
@@ -830,6 +911,7 @@ a { color: inherit; text-decoration: none; }
           </div>
         </div>
 
+        <!-- Search bar (always visible in wallet lookup) -->
         <div class="card" style="margin-bottom:var(--space-6);">
           <div class="search-box">
             <i data-lucide="search" width="16" height="16" class="search-icon"></i>
@@ -839,9 +921,11 @@ a { color: inherit; text-decoration: none; }
           </div>
         </div>
 
+        <!-- Results area -->
         <div id="walletResults"></div>
       </div>
 
+      <!-- ═══════════════════════════════════════ VIEW: COMPARE WALLETS -->
       <div class="view" id="view-compare">
         <div class="page-header">
           <div>
@@ -888,6 +972,7 @@ a { color: inherit; text-decoration: none; }
         </div>
       </div>
 
+      <!-- ═══════════════════════════════════════════ VIEW: WATCHLIST -->
       <div class="view" id="view-watchlist">
         <div class="page-header">
           <div>
@@ -905,11 +990,14 @@ a { color: inherit; text-decoration: none; }
           </div>
         </div>
       </div>
-    </div>
+
+    </div><!-- /app-content -->
   </main>
-</div>
+</div><!-- /app-layout -->
+
 
 <script>
+// ─── APP STATE ───────────────────────────────────────────────────────────────
 const state = {
   currentView: 'dashboard',
   loadedWallet: null,
@@ -919,32 +1007,33 @@ const state = {
   watchlist: [],
 };
 
+// ─── MOCK DATA ────────────────────────────────────────────────────────────────
 const LEADERBOARD = [
-  { rank:1, address:'0x7a250d5630b4cf539739df2c5dacb4c659f2488d', label:'Whale #1', score:94, verdict:'elite', pnl:'+$241,800', winrate:'78%', trades:312 },
-  { rank:2, address:'0xdac17f958d2ee523a2206206994597c13d831ec7', label:'Sharp Eye', score:88, verdict:'strong', pnl:'+$118,240', winrate:'71%', trades:194 },
-  { rank:3, address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', label:'Steady Hand', score:81, verdict:'strong', pnl:'+$89,430', winrate:'67%', trades:258 },
-  { rank:4, address:'0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', label:'Conviction', score:74, verdict:'moderate', pnl:'+$45,100', winrate:'61%', trades:87 },
-  { rank:5, address:'0x6b175474e89094c44da98b954eedeac495271d0f', label:'DAI Maxi', score:67, verdict:'moderate', pnl:'+$28,760', winrate:'58%', trades:143 },
-  { rank:6, address:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', label:'Risky Bob', score:48, verdict:'risky', pnl:'-$12,400', winrate:'44%', trades:201 },
-  { rank:7, address:'0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', label:'Hot Take', score:38, verdict:'poor', pnl:'-$34,900', winrate:'36%', trades:388 },
+  { rank:1, address:'0x7a250d5630b4cf539739df2c5dacb4c659f2488d', label:'Whale #1',     score:94, verdict:'elite',    pnl:'+$241,800', winrate:'78%', trades:312 },
+  { rank:2, address:'0xdac17f958d2ee523a2206206994597c13d831ec7', label:'Sharp Eye',    score:88, verdict:'strong',   pnl:'+$118,240', winrate:'71%', trades:194 },
+  { rank:3, address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', label:'Steady Hand',  score:81, verdict:'strong',   pnl:'+$89,430',  winrate:'67%', trades:258 },
+  { rank:4, address:'0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', label:'Conviction',   score:74, verdict:'moderate', pnl:'+$45,100',  winrate:'61%', trades:87  },
+  { rank:5, address:'0x6b175474e89094c44da98b954eedeac495271d0f', label:'DAI Maxi',     score:67, verdict:'moderate', pnl:'+$28,760',  winrate:'58%', trades:143 },
+  { rank:6, address:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', label:'Risky Bob',    score:48, verdict:'risky',    pnl:'-$12,400',  winrate:'44%', trades:201 },
+  { rank:7, address:'0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', label:'Hot Take',     score:38, verdict:'poor',     pnl:'-$34,900',  winrate:'36%', trades:388 },
 ];
 
 const MOCK_WALLET = {
   address: '0x7a250d5630b4cf539739df2c5dacb4c659f2488d',
-  label: 'Whale #1',
+  label:   'Whale #1',
   score: 94,
   verdict: 'elite',
   summary: 'This wallet demonstrates exceptional discipline: high win rate, consistent sizing, and no evidence of chase-loss behavior. ROI is in the top 2% of all tracked wallets over the past 90 days. Suitable as a strong copytrading candidate.',
   fallback: true,
   kpis: [
-    { label:'P&L (30d)', value:'$241,800', delta:'+18.4%', dir:'up', tip:'Net realized profit/loss over the last 30 days' },
-    { label:'Win Rate', value:'78%', delta:'+3% wk', dir:'up', tip:'Percentage of resolved bets resulting in profit' },
-    { label:'Total Trades', value:'312', delta:'—', dir:'neutral', tip:'Total number of positions entered, all-time' },
-    { label:'Avg Bet Size', value:'$1,240', delta:'—', dir:'neutral', tip:'Average USDC per position taken' },
-    { label:'Sharpe Ratio', value:'2.84', delta:'Top 5%', dir:'up', tip:'Risk-adjusted return. Higher = better reward per unit of risk. Above 2.0 is excellent.' },
-    { label:'Max Drawdown', value:'-8.2%', delta:'Low', dir:'up', tip:'Largest peak-to-trough portfolio decline observed' },
-    { label:'Avg Odds', value:'0.63', delta:'—', dir:'neutral', tip:'Average implied probability on positions taken. Below 0.5 = contrarian; above = favorite' },
-    { label:'Markets', value:'41', delta:'—', dir:'neutral', tip:'Number of distinct Polymarket categories traded' },
+    { label:'P&L (30d)',    value:'$241,800',  delta:'+18.4%', dir:'up',     tip:'Net realized profit/loss over the last 30 days' },
+    { label:'Win Rate',     value:'78%',       delta:'+3% wk', dir:'up',     tip:'Percentage of resolved bets resulting in profit' },
+    { label:'Total Trades', value:'312',       delta:'—',      dir:'neutral',tip:'Total number of positions entered, all-time' },
+    { label:'Avg Bet Size', value:'$1,240',    delta:'—',      dir:'neutral',tip:'Average USDC per position taken' },
+    { label:'Sharpe Ratio', value:'2.84',      delta:'Top 5%', dir:'up',     tip:'Risk-adjusted return. Higher = better reward per unit of risk. Above 2.0 is excellent.' },
+    { label:'Max Drawdown', value:'-8.2%',     delta:'Low',    dir:'up',     tip:'Largest peak-to-trough portfolio decline observed' },
+    { label:'Avg Odds',     value:'0.63',      delta:'—',      dir:'neutral',tip:'Average implied probability on positions taken. Below 0.5 = contrarian; above = favorite' },
+    { label:'Markets',      value:'41',        delta:'—',      dir:'neutral',tip:'Number of distinct Polymarket categories traded' },
   ],
   flags: [
     { type:'green', text:'High win rate sustained 90d+' },
@@ -954,27 +1043,33 @@ const MOCK_WALLET = {
   ],
   recentTrades: [
     { market:'US Presidential Election 2024', bet:'Yes', size:'$8,400', result:'Won', pnl:'+$12,200' },
-    { market:'Fed Rate Cut — June 2025', bet:'No', size:'$3,200', result:'Won', pnl:'+$2,880' },
-    { market:'Ethereum ETF Approval', bet:'Yes', size:'$5,000', result:'Won', pnl:'+$9,500' },
-    { market:'Bitcoin > $100k by EOY 2025', bet:'Yes', size:'$2,000', result:'Pending', pnl:'—' },
+    { market:'Fed Rate Cut — June 2025',      bet:'No',  size:'$3,200', result:'Won', pnl:'+$2,880'  },
+    { market:'Ethereum ETF Approval',         bet:'Yes', size:'$5,000', result:'Won', pnl:'+$9,500'  },
+    { market:'Bitcoin > $100k by EOY 2025',   bet:'Yes', size:'$2,000', result:'Pending', pnl:'—'   },
   ],
 };
 
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
 const VIEW_LABELS = {
-  'dashboard': 'Dashboard',
+  'dashboard':     'Dashboard',
   'wallet-lookup': 'Wallet Lookup',
-  'compare': 'Compare Wallets',
-  'watchlist': 'Watchlist',
+  'compare':       'Compare Wallets',
+  'watchlist':     'Watchlist',
 };
 
 function navigateTo(viewId, fromWallet) {
+  // Deactivate all views
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  // Activate target
   document.getElementById('view-' + viewId).classList.add('active');
   const navItem = document.querySelector('[data-view="' + viewId + '"]');
   if (navItem) navItem.classList.add('active');
+
   state.currentView = viewId;
 
+  // Breadcrumb logic
   if (viewId === 'dashboard') {
     state.breadcrumb = [];
   } else if (viewId === 'wallet-lookup') {
@@ -1025,6 +1120,7 @@ function renderBreadcrumb() {
   lucide.createIcons();
 }
 
+// ─── SIDEBAR MOBILE ───────────────────────────────────────────────────────────
 function openSidebar() {
   document.getElementById('appSidebar').classList.add('open');
   document.getElementById('mobileOverlay').classList.add('visible');
@@ -1034,6 +1130,7 @@ function closeSidebar() {
   document.getElementById('mobileOverlay').classList.remove('visible');
 }
 
+// ─── THEME TOGGLE ─────────────────────────────────────────────────────────────
 (function() {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') === 'dark';
@@ -1054,6 +1151,7 @@ function closeSidebar() {
   });
 })();
 
+// ─── LEADERBOARD ──────────────────────────────────────────────────────────────
 function scoreClass(score) {
   if (score >= 85) return 'elite';
   if (score >= 70) return 'strong';
@@ -1098,6 +1196,7 @@ function openWalletFromLeaderboard(address, label) {
   setTimeout(() => analyzeWallet(address, label), 150);
 }
 
+// ─── WALLET ANALYSIS ─────────────────────────────────────────────────────────
 function prefillWallet(address) {
   document.getElementById('walletInput').value = address;
   focusSearch();
@@ -1112,11 +1211,13 @@ function analyzeWallet(addressOverride, labelOverride) {
   const address = addressOverride || input.value.trim();
   if (!address) { input.focus(); return; }
 
+  // Hide onboarding
   const onboard = document.getElementById('onboardingSection');
   if (onboard) onboard.style.display = 'none';
 
   const results = document.getElementById('walletResults');
 
+  // Loading state
   results.innerHTML = `
     <div class="wallet-header">
       <div class="skeleton skel-badge"></div>
@@ -1133,6 +1234,7 @@ function analyzeWallet(addressOverride, labelOverride) {
     ${[...Array(4)].map(()=>'<div class="skeleton skel-text"></div>').join('')}</div>
   `;
 
+  // Simulate fetch
   setTimeout(() => {
     const notFound = address.length < 10;
     if (notFound) {
@@ -1180,6 +1282,7 @@ function renderWalletResults(container, data) {
       </div>
     ` : ''}
 
+    <!-- Wallet Header Component -->
     <div class="wallet-header">
       <div class="score-badge ${scoreMap[sc]}">
         <div class="score-num">${data.score}</div>
@@ -1212,6 +1315,7 @@ function renderWalletResults(container, data) {
       </div>
     </div>
 
+    <!-- KPI Cards -->
     <div class="section-heading">Performance Metrics</div>
     <div class="kpi-grid">
       ${data.kpis.map(k => `
@@ -1223,6 +1327,7 @@ function renderWalletResults(container, data) {
       `).join('')}
     </div>
 
+    <!-- Red Flag Chips -->
     <div class="section-heading">Signal Summary</div>
     <div class="flag-wrap mb-6">
       ${data.flags.map(f => `
@@ -1233,6 +1338,7 @@ function renderWalletResults(container, data) {
       `).join('')}
     </div>
 
+    <!-- Recent Trades -->
     <div class="section-heading">Recent Positions</div>
     <div class="card" style="padding:0;overflow:hidden;margin-bottom:var(--space-6);">
       <div style="overflow-x:auto;">
@@ -1265,6 +1371,7 @@ function renderWalletResults(container, data) {
   lucide.createIcons();
 }
 
+// ─── COMPARE ──────────────────────────────────────────────────────────────────
 function prefillCompare(address) {
   const inputA = document.getElementById('compareWalletA');
   if (inputA && !inputA.value) { inputA.value = address; }
@@ -1374,6 +1481,7 @@ function renderComparison() {
   lucide.createIcons();
 }
 
+// ─── UTILS ────────────────────────────────────────────────────────────────────
 function copyAddress(address) {
   navigator.clipboard.writeText(address).then(() => {
     showToast('Address copied!');
@@ -1402,12 +1510,14 @@ function showToast(msg) {
   toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 2200);
 }
 
+// Keyboard nav for nav items
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); }
   });
 });
 
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 renderLeaderboard();
 renderBreadcrumb();
 lucide.createIcons();
