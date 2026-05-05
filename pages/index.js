@@ -2,15 +2,15 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-// MOCK DATA for Leaderboard (as per index.html)
+// MOCK DATA for Leaderboard (as per index.html, updated with REAL Polymarket wallets)
 const LEADERBOARD = [
-  { rank:1, address:'0x7a250d5630b4cf539739df2c5dacb4c659f2488d', label:'Whale #1',     score:94, verdict:'elite',    pnl:'+$241,800', winrate:'78%', trades:312 },
-  { rank:2, address:'0xdac17f958d2ee523a2206206994597c13d831ec7', label:'Sharp Eye',    score:88, verdict:'strong',   pnl:'+$118,240', winrate:'71%', trades:194 },
-  { rank:3, address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', label:'Steady Hand',  score:81, verdict:'strong',   pnl:'+$89,430',  winrate:'67%', trades:258 },
-  { rank:4, address:'0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', label:'Conviction',   score:74, verdict:'moderate', pnl:'+$45,100',  winrate:'61%', trades:87  },
-  { rank:5, address:'0x6b175474e89094c44da98b954eedeac495271d0f', label:'DAI Maxi',     score:67, verdict:'moderate', pnl:'+$28,760',  winrate:'58%', trades:143 },
-  { rank:6, address:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', label:'Risky Bob',    score:48, verdict:'risky',    pnl:'-$12,400',  winrate:'44%', trades:201 },
-  { rank:7, address:'0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', label:'Hot Take',     score:38, verdict:'poor',     pnl:'-$34,900',  winrate:'36%', trades:388 },
+  { rank:1, address:'0x91eee6b7cea1916214daebec3b92b7513079c5b8', label:'everydaymortgage', score:94, verdict:'elite',    pnl:'+$472,838', winrate:'78%', trades:312 },
+  { rank:2, address:'0xc2e7800b5af46e6093872b177b7a5e7f0563be51', label:'beachboy4',        score:88, verdict:'strong',   pnl:'+$446,056', winrate:'71%', trades:194 },
+  { rank:3, address:'0xe48109602719f95c247fec255ffb71bab3f985a3', label:'trade-via-Gravia', score:81, verdict:'strong',   pnl:'+$394,019', winrate:'67%', trades:258 },
+  { rank:4, address:'0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e', label:'Lakersfan111',     score:74, verdict:'moderate', pnl:'+$338,714', winrate:'61%', trades:87  },
+  { rank:5, address:'0x9f2fe025f84839ca81dd8e0338892605702d2ca8', label:'surfandturf',      score:67, verdict:'moderate', pnl:'+$304,135', winrate:'58%', trades:143 },
+  { rank:6, address:'0xce5bec63b40392845a9a504915f607c8e03a047a', label:'Nexuus',           score:48, verdict:'risky',    pnl:'+$279,999', winrate:'44%', trades:201 },
+  { rank:7, address:'0x84cfffc3f16dcc353094de30d4a45226eccd2f63', label:'mooseborzoi',      score:38, verdict:'poor',     pnl:'+$279,227', winrate:'36%', trades:388 },
 ];
 
 export default function Dashboard() {
@@ -45,7 +45,7 @@ export default function Dashboard() {
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button className="btn btn-ghost btn-sm" onClick={() => router.push('/wallet')}>
-            <i data-lucide="search" width="14" height="14"></i> Lookup Wallet
+            <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="search" width="14" height="14"></i>' }} /> Lookup Wallet
           </button>
         </div>
       </div>
@@ -58,10 +58,10 @@ export default function Dashboard() {
           </div>
           <div className="flex gap-2">
             <button className="btn btn-secondary btn-sm" onClick={() => router.push('/compare')}>
-              <i data-lucide="git-compare" width="14" height="14"></i> Compare
+              <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="git-compare" width="14" height="14"></i>' }} /> Compare
             </button>
             <button className="btn btn-primary btn-sm" onClick={() => router.push('/wallet')}>
-              <i data-lucide="search" width="14" height="14"></i> Lookup Wallet
+              <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="search" width="14" height="14"></i>' }} /> Lookup Wallet
             </button>
           </div>
         </div>
@@ -70,24 +70,24 @@ export default function Dashboard() {
         <div className="section-heading">Platform Overview</div>
         <div className="kpi-grid" style={{ marginBottom: 'var(--space-8)' }}>
           <div className="kpi-card">
-            <div className="kpi-label"><i data-lucide="users" width="12" height="12"></i> Active Traders</div>
+            <div className="kpi-label"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="users" width="12" height="12"></i>' }} /> Active Traders</div>
             <div className="kpi-value">24,810</div>
-            <div className="kpi-delta up"><i data-lucide="trending-up" width="11" height="11"></i>+3.2% 7d</div>
+            <div className="kpi-delta up"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trending-up" width="11" height="11"></i>' }} />+3.2% 7d</div>
           </div>
           <div className="kpi-card">
-            <div className="kpi-label"><i data-lucide="activity" width="12" height="12"></i> Volume 24h</div>
+            <div className="kpi-label"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="activity" width="12" height="12"></i>' }} /> Volume 24h</div>
             <div className="kpi-value">$8.3M</div>
-            <div className="kpi-delta up"><i data-lucide="trending-up" width="11" height="11"></i>+12.4%</div>
+            <div className="kpi-delta up"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trending-up" width="11" height="11"></i>' }} />+12.4%</div>
           </div>
           <div className="kpi-card">
-            <div className="kpi-label"><i data-lucide="bar-chart-2" width="12" height="12"></i> Open Markets</div>
+            <div className="kpi-label"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="bar-chart-2" width="12" height="12"></i>' }} /> Open Markets</div>
             <div className="kpi-value">1,492</div>
             <div className="kpi-delta neutral">—</div>
           </div>
           <div className="kpi-card">
-            <div className="kpi-label"><i data-lucide="trophy" width="12" height="12"></i> Elite Wallets</div>
+            <div className="kpi-label"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trophy" width="12" height="12"></i>' }} /> Elite Wallets</div>
             <div className="kpi-value">87</div>
-            <div className="kpi-delta up"><i data-lucide="trending-up" width="11" height="11"></i>+5 this wk</div>
+            <div className="kpi-delta up"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trending-up" width="11" height="11"></i>' }} />+5 this wk</div>
           </div>
         </div>
 
@@ -141,7 +141,7 @@ export default function Dashboard() {
                       <td className="text-muted">{w.trades}</td>
                       <td>
                         <button className="btn btn-ghost btn-sm" onClick={(e) => { e.stopPropagation(); navigateToWallet(w.address); }}>
-                          <i data-lucide="arrow-right" width="13" height="13"></i>
+                          <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="arrow-right" width="13" height="13"></i>' }} />
                         </button>
                       </td>
                     </tr>
@@ -155,3 +155,4 @@ export default function Dashboard() {
     </>
   );
 }
+

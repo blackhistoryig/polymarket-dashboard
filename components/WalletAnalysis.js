@@ -50,7 +50,7 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
             <div className="flag-wrap mt-4">
               {(flags || []).slice(0, 2).map((f, i) => (
                 <span key={i} className="flag-chip flag-yellow">
-                  <i data-lucide="alert-triangle" width="11" height="11"></i>
+                  <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="alert-triangle" width="11" height="11"></i>' }} />
                   {f.label}
                 </span>
               ))}
@@ -65,7 +65,7 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
     <>
       {dataSource?.onChain === null && (
         <div className="fallback-banner">
-          <i data-lucide="info" width="14" height="14" style={{ flexShrink: 0 }}></i>
+          <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style={{ flexShrink: 0 }}></i>' }} />
           Leaderboard stats loaded. Deeper trade-history analysis is still pending — live data may differ.
         </div>
       )}
@@ -82,7 +82,7 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
             <span className={`verdict verdict-${sc}`}>{verdict}</span>
           </div>
           <div className="wallet-address" title="Click to copy" onClick={() => navigator.clipboard.writeText(proxyWallet)}>
-            <i data-lucide="copy" width="11" height="11"></i>
+            <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="copy" width="11" height="11"></i>' }} />
             {proxyWallet}
           </div>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)', maxWidth: '60ch' }}>
@@ -90,15 +90,15 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
           </p>
           <div className="wallet-actions">
             <Link href={`/compare?wallet=${proxyWallet}`} className="btn btn-primary btn-sm">
-              <i data-lucide="git-compare" width="13" height="13"></i>
+              <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="git-compare" width="13" height="13"></i>' }} />
               Compare this wallet
             </Link>
             <button className="btn btn-secondary btn-sm">
-              <i data-lucide="star" width="13" height="13"></i>
+              <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="star" width="13" height="13"></i>' }} />
               Add to Watchlist
             </button>
             <button className="btn btn-ghost btn-sm text-muted" onClick={() => navigator.clipboard.writeText(proxyWallet)}>
-              <i data-lucide="copy" width="13" height="13"></i>
+              <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="copy" width="13" height="13"></i>' }} />
               Copy Address
             </button>
           </div>
@@ -110,11 +110,11 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
       <div className="kpi-grid">
         {kpis.map((k, i) => (
           <div key={i} className="kpi-card" data-tip={k.tip}>
-            <div className="kpi-label">{k.label} <i data-lucide="info" width="10" height="10" style={{ color: 'var(--color-text-faint)' }}></i></div>
+            <div className="kpi-label">{k.label} <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="10" height="10" style={{ color: 'var(--color-text-faint)' }}></i>' }} /></div>
             <div className="kpi-value">{k.value}</div>
             <div className={`kpi-delta ${k.dir}`}>
-              {k.dir === 'up' && <i data-lucide="trending-up" width="11" height="11"></i>}
-              {k.dir === 'down' && <i data-lucide="trending-down" width="11" height="11"></i>}
+              {k.dir === 'up' && <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trending-up" width="11" height="11"></i>' }} />}
+              {k.dir === 'down' && <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trending-down" width="11" height="11"></i>' }} />}
               {k.delta}
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
           <div className="flag-wrap mb-6">
             {flags.map((f, i) => (
               <span key={i} className="flag-chip flag-yellow">
-                <i data-lucide="alert-triangle" width="11" height="11"></i>
+                <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="alert-triangle" width="11" height="11"></i>' }} />
                 {f.label} - {f.detail}
               </span>
             ))}
@@ -175,3 +175,4 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
     </>
   );
 }
+

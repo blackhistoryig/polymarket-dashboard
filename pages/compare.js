@@ -38,10 +38,10 @@ export default function Compare() {
   };
 
   const loadSampleComparison = () => {
-    setWalletA('0x7a250d5630b4cf539739df2c5dacb4c659f2488d');
-    setWalletB('0x6b175474e89094c44da98b954eedeac495271d0f');
-    loadWallet('0x7a250d5630b4cf539739df2c5dacb4c659f2488d', 'A');
-    loadWallet('0x6b175474e89094c44da98b954eedeac495271d0f', 'B');
+    setWalletA('0x91eee6b7cea1916214daebec3b92b7513079c5b8');
+    setWalletB('0xc2e7800b5af46e6093872b177b7a5e7f0563be51');
+    loadWallet('0x91eee6b7cea1916214daebec3b92b7513079c5b8', 'A');
+    loadWallet('0xc2e7800b5af46e6093872b177b7a5e7f0563be51', 'B');
   };
 
   const fmt$ = (n) => {
@@ -61,7 +61,7 @@ export default function Compare() {
       <div className="app-topbar">
         <div className="breadcrumb">
           <span className="breadcrumb-item clickable" onClick={() => router.push('/')}>
-            <i data-lucide="arrow-left" width="12" height="12"></i> Dashboard
+            <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="arrow-left" width="12" height="12"></i>' }} /> Dashboard
           </span>
           <span className="breadcrumb-sep">/</span>
           <span className="breadcrumb-item" style={{fontWeight: 500, color: 'var(--color-text)'}}>Compare</span>
@@ -75,7 +75,7 @@ export default function Compare() {
             <p className="page-subtitle">Side-by-side analysis of two trader profiles</p>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={() => router.push('/wallet')}>
-            <i data-lucide="arrow-left" width="14" height="14"></i> Back to Lookup
+            <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="arrow-left" width="14" height="14"></i>' }} /> Back to Lookup
           </button>
         </div>
 
@@ -83,7 +83,7 @@ export default function Compare() {
           <div>
             <div className="section-heading">Wallet A</div>
             <div className="search-box">
-              <i data-lucide="search" width="16" height="16" className="search-icon"></i>
+              <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="search" width="16" height="16" className="search-icon"></i>' }} />
               <input 
                 type="text" 
                 value={walletA} 
@@ -97,7 +97,7 @@ export default function Compare() {
           <div>
             <div className="section-heading">Wallet B</div>
             <div className="search-box">
-              <i data-lucide="search" width="16" height="16" className="search-icon"></i>
+              <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="search" width="16" height="16" className="search-icon"></i>' }} />
               <input 
                 type="text" 
                 value={walletB} 
@@ -112,22 +112,22 @@ export default function Compare() {
 
         {!dataA && !dataB && (
           <div className="state-box">
-            <div className="state-icon"><i data-lucide="git-compare" width="48" height="48"></i></div>
+            <div className="state-icon"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="git-compare" width="48" height="48"></i>' }} /></div>
             <h3>No wallets loaded yet</h3>
             <p>Enter two wallet addresses above to compare their profiles side by side.</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 'var(--space-2)' }}>
               <button className="btn btn-primary" onClick={loadSampleComparison}>
-                <i data-lucide="zap" width="14" height="14"></i> Load sample comparison
+                <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="zap" width="14" height="14"></i>' }} /> Load sample comparison
               </button>
             </div>
           </div>
         )}
 
         {dataA && !dataB && (
-          <div className="fallback-banner"><i data-lucide="info" width="14" height="14" style={{flexShrink: 0}}></i>Wallet A loaded. Enter a second wallet to compare.</div>
+          <div className="fallback-banner"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style={{flexShrink: 0}}></i>' }} />Wallet A loaded. Enter a second wallet to compare.</div>
         )}
         {!dataA && dataB && (
-          <div className="fallback-banner"><i data-lucide="info" width="14" height="14" style={{flexShrink: 0}}></i>Wallet B loaded. Enter a second wallet to compare.</div>
+          <div className="fallback-banner"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style={{flexShrink: 0}}></i>' }} />Wallet B loaded. Enter a second wallet to compare.</div>
         )}
 
         {(dataA || dataB) && (
@@ -168,10 +168,10 @@ export default function Compare() {
             </div>
             <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-5)', flexWrap: 'wrap' }}>
               <button className="btn btn-ghost btn-sm" onClick={() => router.push(`/wallet?wallet=${dataA.proxyWallet}`)}>
-                <i data-lucide="search" width="13" height="13"></i> Deep-dive Wallet A
+                <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="search" width="13" height="13"></i>' }} /> Deep-dive Wallet A
               </button>
               <button className="btn btn-ghost btn-sm" onClick={() => router.push(`/wallet?wallet=${dataB.proxyWallet}`)}>
-                <i data-lucide="search" width="13" height="13"></i> Deep-dive Wallet B
+                <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="search" width="13" height="13"></i>' }} /> Deep-dive Wallet B
               </button>
             </div>
           </>
@@ -180,3 +180,4 @@ export default function Compare() {
     </>
   );
 }
+

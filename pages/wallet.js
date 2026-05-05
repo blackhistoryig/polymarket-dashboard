@@ -53,7 +53,7 @@ export default function WalletVetting() {
       <div className="app-topbar">
         <div className="breadcrumb">
           <span className="breadcrumb-item clickable" onClick={() => router.push('/')}>
-            <i data-lucide="arrow-left" width="12" height="12"></i> Dashboard
+            <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="arrow-left" width="12" height="12"></i>' }} /> Dashboard
           </span>
           <span className="breadcrumb-sep">/</span>
           <span className="breadcrumb-item" style={{fontWeight: 500, color: 'var(--color-text)'}}>Wallet Lookup</span>
@@ -74,9 +74,9 @@ export default function WalletVetting() {
               <p>Enter a wallet address below to see their performance score, win rate, profitability, risk flags, and a plain-English verdict on their trading quality.</p>
               <div>
                 <div style={{fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: 6}}>Try an example wallet:</div>
-                <div className="example-wallet" onClick={() => { setQuery('0x7a250d5630b4cf539739df2c5dacb4c659f2488d'); handleSearch('0x7a250d5630b4cf539739df2c5dacb4c659f2488d'); }}>
-                  <i data-lucide="copy" width="12" height="12"></i>
-                  0x7a250d5630b4cf539739df2c5dacb4c659f2488d
+                <div className="example-wallet" onClick={() => { setQuery('0x91eee6b7cea1916214daebec3b92b7513079c5b8'); handleSearch('0x91eee6b7cea1916214daebec3b92b7513079c5b8'); }}>
+                  <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="copy" width="12" height="12"></i>' }} />
+                  0x91eee6b7cea1916214daebec3b92b7513079c5b8
                 </div>
               </div>
             </div>
@@ -86,7 +86,7 @@ export default function WalletVetting() {
         {/* Search bar */}
         <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
           <div className="search-box">
-            <i data-lucide="search" width="16" height="16" className="search-icon"></i>
+            <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="search" width="16" height="16" className="search-icon"></i>' }} />
             <input 
               type="text" 
               value={query}
@@ -122,11 +122,11 @@ export default function WalletVetting() {
 
           {error && (
             <div className="state-box">
-              <div className="state-icon"><i data-lucide="search-x" width="48" height="48"></i></div>
+              <div className="state-icon"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="search-x" width="48" height="48"></i>' }} /></div>
               <h3>Wallet not found or error</h3>
               <p>{error}</p>
               <button className="btn btn-primary mt-4" onClick={() => handleSearch()}>
-                <i data-lucide="refresh-cw" width="14" height="14"></i>
+                <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="refresh-cw" width="14" height="14"></i>' }} />
                 Try again
               </button>
             </div>
@@ -140,3 +140,4 @@ export default function WalletVetting() {
     </>
   );
 }
+

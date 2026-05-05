@@ -34,7 +34,7 @@ export default function Layout({ children }) {
       
       <div className="mobile-header">
         <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
-          <i data-lucide="menu" width="20" height="20"></i>
+          <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="menu" width="20" height="20"></i>' }} />
         </button>
         <div style={{display:'flex', alignItems:'center', gap:'8px', fontWeight:600, fontSize:'15px'}}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -49,7 +49,7 @@ export default function Layout({ children }) {
           Wallet Intel
         </div>
         <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
-          <i data-lucide={isDark ? 'sun' : 'moon'} width="18" height="18"></i>
+          <span dangerouslySetInnerHTML={{ __html: `<i data-lucide="${isDark ? 'sun' : 'moon'}" width="18" height="18"></i>` }} />
         </button>
       </div>
 
@@ -75,14 +75,14 @@ export default function Layout({ children }) {
               const active = router.pathname === path || (item.id !== '' && router.pathname.startsWith(`/${item.id}`));
               return (
                 <Link href={path} key={item.id} className={`nav-item ${active ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}>
-                  <i data-lucide={item.icon} width="16" height="16"></i>
+                  <span dangerouslySetInnerHTML={{ __html: `<i data-lucide="${item.icon}" width="16" height="16"></i>` }} />
                   {item.label}
                 </Link>
               );
             })}
             <div className="nav-section-label">Personal</div>
             <Link href="/watchlist" className={`nav-item ${router.pathname === '/watchlist' ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}>
-              <i data-lucide="star" width="16" height="16"></i>
+              <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="star" width="16" height="16"></i>' }} />
               Watchlist
               <span className="nav-badge">0</span>
             </Link>
@@ -91,7 +91,7 @@ export default function Layout({ children }) {
           <div className="sidebar-footer">
             <span style={{fontSize:'var(--text-xs)', color:'var(--color-text-faint)'}}>Polymarket Analytics</span>
             <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
-              <i data-lucide={isDark ? 'sun' : 'moon'} width="16" height="16"></i>
+              <span dangerouslySetInnerHTML={{ __html: `<i data-lucide="${isDark ? 'sun' : 'moon'}" width="16" height="16"></i>` }} />
             </button>
           </div>
         </aside>
@@ -103,3 +103,4 @@ export default function Layout({ children }) {
     </>
   );
 }
+

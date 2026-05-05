@@ -13,7 +13,7 @@ export default function Watchlist() {
       <div className="app-topbar">
         <div className="breadcrumb">
           <span className="breadcrumb-item clickable" onClick={() => router.push('/')}>
-            <i data-lucide="arrow-left" width="12" height="12"></i> Dashboard
+            <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="arrow-left" width="12" height="12"></i>' }} /> Dashboard
           </span>
           <span className="breadcrumb-sep">/</span>
           <span className="breadcrumb-item" style={{fontWeight: 500, color: 'var(--color-text)'}}>Watchlist</span>
@@ -29,15 +29,16 @@ export default function Watchlist() {
         </div>
 
         <div className="state-box">
-          <div className="state-icon"><i data-lucide="star" width="48" height="48"></i></div>
+          <div className="state-icon"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="star" width="48" height="48"></i>' }} /></div>
           <h3>Your watchlist is empty</h3>
           <p>After analyzing a wallet, click "Add to Watchlist" to track it here.</p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 'var(--space-2)' }}>
-            <div className="placeholder-pill"><i data-lucide="clock" width="12" height="12"></i> Watchlist alerts — coming soon</div>
-            <div className="placeholder-pill"><i data-lucide="bell" width="12" height="12"></i> Win streak notifications — coming soon</div>
+            <div className="placeholder-pill"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="clock" width="12" height="12"></i>' }} /> Watchlist alerts — coming soon</div>
+            <div className="placeholder-pill"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="bell" width="12" height="12"></i>' }} /> Win streak notifications — coming soon</div>
           </div>
         </div>
       </div>
     </>
   );
 }
+
