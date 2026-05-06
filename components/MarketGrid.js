@@ -8,19 +8,23 @@ export default function MarketGrid() {
   const router = useRouter();
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [flipped, setFlipped] = useState({});
   const [showAll, setShowAll] = useState(false);
-  const [sortBy, setSortBy] = useState('volume'); // 'volume' | 'liquidity' | 'activity'
+  const [sortBy, setSortBy] = useState('volume');
 
   useEffect(() => {
     async function load() {
       try {
-        // Use our server-side proxy to avoid CORS issues
         const res = await fetch('/api/markets');
-        if (!res.ok) throw new Error('API error');
+        if (!res.ok) throw new Error(`API error ${res.status}`);
         const arr = await res.json();
+        if (!Array.isArray(arr)) throw new Error('Unexpected response format');
         setMarkets(arr.slice(0, MAX_LIMIT));
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error('MarketGrid fetch error:', e);
+        setError(e.message);
+      }
       setLoading(false);
     }
     load();
@@ -47,11 +51,20 @@ export default function MarketGrid() {
   const visible = showAll ? sorted : sorted.slice(0, DEFAULT_LIMIT);
 
   if (loading) return (
-    <div style={{padding:'var(--space-6)',textAlign:'center',color:'var(--color-text-muted)'}}>
+    <div style={{padding:'var(--space-5)',textAlign:'center',color:'var(--color-text-muted)',fontSize:'var(--text-sm)'}}>
       Loading Hot Markets...
     </div>
   );
-  if (!markets.length) return null;
+  if (error) return (
+    <div style={{padding:'var(--space-5)',color:'var(--color-error, #ef4444)',fontSize:'var(--text-sm)',background:'rgba(239,68,68,0.06)',borderRadius:'8px',marginBottom:'var(--space-4)'}}>
+      ⚠️ Could not load markets: {error}
+    </div>
+  );
+  if (!markets.length) return (
+    <div style={{padding:'var(--space-5)',textAlign:'center',color:'var(--color-text-muted)',fontSize:'var(--text-sm)'}}>
+      No hot markets found right now.
+    </div>
+  );
 
   return (
     <div style={{marginBottom:'var(--space-8)'}}>
