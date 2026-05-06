@@ -10,6 +10,7 @@ export default function MarketGrid() {
   const [loading, setLoading] = useState(true);
   const [flipped, setFlipped] = useState({});
   const [showAll, setShowAll] = useState(false);
+  const [sortBy, setSortBy] = useState('volume'); // 'volume' | 'liquidity' | 'activity'
 
   useEffect(() => {
     async function load() {
@@ -33,7 +34,17 @@ export default function MarketGrid() {
     return `$${v.toFixed(0)}`;
   };
 
-  const visible = showAll ? markets : markets.slice(0, DEFAULT_LIMIT);
+  const SORTS = [
+    { id: 'volume',    label: 'Volume',    icon: 'bar-chart-2',  key: 'volume' },
+    { id: 'liquidity', label: 'Liquidity', icon: 'droplets',     key: 'liquidity' },
+    { id: 'activity',  label: 'Activity',  icon: 'zap',          key: 'volume' }, // 24hr volume = activity proxy
+  ];
+
+  const sorted = [...markets].sort((a, b) => {
+    if (sortBy === 'liquidity') return (b.liquidity || 0) - (a.liquidity || 0);
+    return (b.volume || 0) - (a.volume || 0); // volume & activity both sort by volume
+  });
+  const visible = showAll ? sorted : sorted.slice(0, DEFAULT_LIMIT);
 
   if (loading) return (
     <div style={{padding:'var(--space-6)',textAlign:'center',color:'var(--color-text-muted)'}}>
@@ -44,9 +55,25 @@ export default function MarketGrid() {
 
   return (
     <div style={{marginBottom:'var(--space-8)'}}>
-      <div className="section-heading">
-        <span dangerouslySetInnerHTML={{__html:'<i data-lucide="flame" width="13" height="13"></i>'}} />
-        {' '}Hot Markets — <span style={{fontSize:'var(--text-xs)',color:'var(--color-text-faint)',fontWeight:400}}>click a card to see token prices</span>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'var(--space-3)',marginBottom:'var(--space-4)'}}>
+        <div className="section-heading" style={{marginBottom:0}}>
+          <span dangerouslySetInnerHTML={{__html:'<i data-lucide="flame" width="13" height="13"></i>'}} />
+          {' '}Hot Markets
+        </div>
+        {/* Sort filter pills */}
+        <div style={{display:'flex',gap:'6px'}}>
+          {[{id:'volume',label:'Volume',icon:'bar-chart-2'},{id:'liquidity',label:'Liquidity',icon:'droplets'},{id:'activity',label:'Activity',icon:'zap'}].map(f => (
+            <button
+              key={f.id}
+              onClick={() => setSortBy(f.id)}
+              className={`btn btn-sm ${sortBy === f.id ? 'btn-secondary' : 'btn-ghost text-muted'}`}
+              style={{display:'flex',alignItems:'center',gap:'4px',fontSize:'12px'}}
+            >
+              <span dangerouslySetInnerHTML={{__html:`<i data-lucide="${f.icon}" width="11" height="11"></i>`}} />
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'var(--space-4)'}}>
         {visible.map(m => {
