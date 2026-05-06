@@ -7,7 +7,7 @@ export default function Watchlist() {
   return (
     <>
       <Head>
-        <title>Watchlist | Polymarket Dashboard</title>
+        <title>Watchlist | PolySuperDash</title>
       </Head>
 
       <div className="app-topbar">

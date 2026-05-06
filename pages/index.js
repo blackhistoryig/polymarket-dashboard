@@ -44,7 +44,7 @@ export default function Dashboard() {
   return (
     <>
       <Head>
-        <title>Dashboard | Polymarket Wallet Intel</title>
+        <title>PolySuperDash — Polymarket Intelligence</title>
       </Head>
 
       <div className="app-topbar">
@@ -61,8 +61,8 @@ export default function Dashboard() {
       <div className="app-content">
         <div className="page-header">
           <div>
-            <h1 className="page-title">Dashboard</h1>
-            <p className="page-subtitle">Leaderboard and top trader performance at a glance</p>
+            <h1 className="page-title">Market Dashboard</h1>
+            <p className="page-subtitle">Your Polymarket intelligence hub — markets, traders, and insights in one place</p>
           </div>
           <div className="flex gap-2">
             <button className="btn btn-secondary btn-sm" onClick={() => router.push('/compare')}>

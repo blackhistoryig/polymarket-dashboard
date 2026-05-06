@@ -47,7 +47,7 @@ export default function WalletVetting() {
   return (
     <>
       <Head>
-        <title>Wallet Lookup | Polymarket Dashboard</title>
+        <title>Wallet Lookup | PolySuperDash</title>
       </Head>
 
       <div className="app-topbar">

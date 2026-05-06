@@ -55,7 +55,7 @@ export default function Compare() {
   return (
     <>
       <Head>
-        <title>Compare Wallets | Polymarket Dashboard</title>
+        <title>Compare Wallets | PolySuperDash</title>
       </Head>
 
       <div className="app-topbar">
