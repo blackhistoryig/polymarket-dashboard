@@ -124,10 +124,10 @@ export default function Compare() {
         )}
 
         {dataA && !dataB && (
-          <div className="fallback-banner"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style={{flexShrink: 0}}></i>' }} />Wallet A loaded. Enter a second wallet to compare.</div>
+          <div className="fallback-banner"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style="flex-shrink: 0;"></i>' }} />Wallet A loaded. Enter a second wallet to compare.</div>
         )}
         {!dataA && dataB && (
-          <div className="fallback-banner"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style={{flexShrink: 0}}></i>' }} />Wallet B loaded. Enter a second wallet to compare.</div>
+          <div className="fallback-banner"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style="flex-shrink: 0;"></i>' }} />Wallet B loaded. Enter a second wallet to compare.</div>
         )}
 
         {(dataA || dataB) && (
@@ -180,4 +180,5 @@ export default function Compare() {
     </>
   );
 }
+
 

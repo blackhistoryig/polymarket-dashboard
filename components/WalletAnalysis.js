@@ -65,7 +65,7 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
     <>
       {dataSource?.onChain === null && (
         <div className="fallback-banner">
-          <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style={{ flexShrink: 0 }}></i>' }} />
+          <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style="flex-shrink: 0;"></i>' }} />
           Leaderboard stats loaded. Deeper trade-history analysis is still pending — live data may differ.
         </div>
       )}
@@ -110,7 +110,7 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
       <div className="kpi-grid">
         {kpis.map((k, i) => (
           <div key={i} className="kpi-card" data-tip={k.tip}>
-            <div className="kpi-label">{k.label} <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="10" height="10" style={{ color: 'var(--color-text-faint)' }}></i>' }} /></div>
+            <div className="kpi-label">{k.label} <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="10" height="10" style="color: var(--color-text-faint);"></i>' }} /></div>
             <div className="kpi-value">{k.value}</div>
             <div className={`kpi-delta ${k.dir}`}>
               {k.dir === 'up' && <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trending-up" width="11" height="11"></i>' }} />}
@@ -175,4 +175,5 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
     </>
   );
 }
+
 
