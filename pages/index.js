@@ -73,30 +73,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Platform KPIs */}
-        <div className="section-heading">Platform Overview</div>
-        <div className="kpi-grid" style={{ marginBottom: 'var(--space-8)' }}>
-          <div className="kpi-card">
-            <div className="kpi-label"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="users" width="12" height="12"></i>' }} /> Active Traders</div>
-            <div className="kpi-value">24,810</div>
-            <div className="kpi-delta up"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trending-up" width="11" height="11"></i>' }} />+3.2% 7d</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="activity" width="12" height="12"></i>' }} /> Volume 24h</div>
-            <div className="kpi-value">$8.3M</div>
-            <div className="kpi-delta up"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trending-up" width="11" height="11"></i>' }} />+12.4%</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="bar-chart-2" width="12" height="12"></i>' }} /> Open Markets</div>
-            <div className="kpi-value">1,492</div>
-            <div className="kpi-delta neutral">—</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trophy" width="12" height="12"></i>' }} /> Elite Wallets</div>
-            <div className="kpi-value">87</div>
-            <div className="kpi-delta up"><span dangerouslySetInnerHTML={{ __html: '<i data-lucide="trending-up" width="11" height="11"></i>' }} />+5 this wk</div>
-          </div>
-        </div>
+
 
         {/* Leaderboard */}
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
