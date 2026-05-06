@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import MarketGrid from '../components/MarketGrid';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -74,6 +75,9 @@ export default function Dashboard() {
         </div>
 
 
+
+        {/* Hot Markets with flipping cards */}
+        <MarketGrid />
 
         {/* Leaderboard */}
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>

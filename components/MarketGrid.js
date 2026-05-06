@@ -14,10 +14,11 @@ export default function MarketGrid() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('https://clob.polymarket.com/markets?limit=20&active=true');
-        const data = await res.json();
-        const arr = Array.isArray(data) ? data : (data.data || []);
-        setMarkets(arr.filter(m => m.active && !m.closed).slice(0, MAX_LIMIT));
+        // Use our server-side proxy to avoid CORS issues
+        const res = await fetch('/api/markets');
+        if (!res.ok) throw new Error('API error');
+        const arr = await res.json();
+        setMarkets(arr.slice(0, MAX_LIMIT));
       } catch (e) { console.error(e); }
       setLoading(false);
     }
