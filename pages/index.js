@@ -1,19 +1,27 @@
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-// MOCK DATA for Leaderboard (as per index.html, updated with REAL Polymarket wallets)
-const LEADERBOARD = [
-  { rank:1, address:'0x91eee6b7cea1916214daebec3b92b7513079c5b8', label:'everydaymortgage', score:94, verdict:'elite',    pnl:'+$472,838', winrate:'78%', trades:312 },
-  { rank:2, address:'0xc2e7800b5af46e6093872b177b7a5e7f0563be51', label:'beachboy4',        score:88, verdict:'strong',   pnl:'+$446,056', winrate:'71%', trades:194 },
-  { rank:3, address:'0xe48109602719f95c247fec255ffb71bab3f985a3', label:'trade-via-Gravia', score:81, verdict:'strong',   pnl:'+$394,019', winrate:'67%', trades:258 },
-  { rank:4, address:'0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e', label:'Lakersfan111',     score:74, verdict:'moderate', pnl:'+$338,714', winrate:'61%', trades:87  },
-  { rank:5, address:'0x9f2fe025f84839ca81dd8e0338892605702d2ca8', label:'surfandturf',      score:67, verdict:'moderate', pnl:'+$304,135', winrate:'58%', trades:143 },
-  { rank:6, address:'0xce5bec63b40392845a9a504915f607c8e03a047a', label:'Nexuus',           score:48, verdict:'risky',    pnl:'+$279,999', winrate:'44%', trades:201 },
-  { rank:7, address:'0x84cfffc3f16dcc353094de30d4a45226eccd2f63', label:'mooseborzoi',      score:38, verdict:'poor',     pnl:'+$279,227', winrate:'36%', trades:388 },
-];
-
 export default function Dashboard() {
   const router = useRouter();
+  const [timeframe, setTimeframe] = useState('All');
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchLeaderboard() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/leaderboard?timeframe=${timeframe}`);
+        const data = await res.json();
+        setLeaderboard(data);
+      } catch (e) {
+        console.error(e);
+      }
+      setLoading(false);
+    }
+    fetchLeaderboard();
+  }, [timeframe]);
 
   const scoreClass = (score) => {
     if (score >= 85) return 'elite';
@@ -98,9 +106,10 @@ export default function Dashboard() {
               <div className="card-subtitle">Click any wallet to open Wallet Lookup</div>
             </div>
             <div className="flex gap-2">
-              <button className="btn btn-ghost btn-sm text-muted">7d</button>
-              <button className="btn btn-secondary btn-sm" style={{ pointerEvents: 'none' }}>30d</button>
-              <button className="btn btn-ghost btn-sm text-muted">All</button>
+              <button className={`btn btn-sm ${timeframe === '1D' ? 'btn-secondary' : 'btn-ghost text-muted'}`} onClick={() => setTimeframe('1D')}>1D</button>
+              <button className={`btn btn-sm ${timeframe === '7D' ? 'btn-secondary' : 'btn-ghost text-muted'}`} onClick={() => setTimeframe('7D')}>7D</button>
+              <button className={`btn btn-sm ${timeframe === '1M' ? 'btn-secondary' : 'btn-ghost text-muted'}`} onClick={() => setTimeframe('1M')}>1M</button>
+              <button className={`btn btn-sm ${timeframe === 'All' ? 'btn-secondary' : 'btn-ghost text-muted'}`} onClick={() => setTimeframe('All')}>All</button>
             </div>
           </div>
           <div style={{ overflowX: 'auto' }}>
@@ -118,7 +127,9 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {LEADERBOARD.map((w, i) => {
+                {loading ? (
+                  <tr><td colSpan="8" style={{textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)'}}>Loading data...</td></tr>
+                ) : leaderboard.map((w, i) => {
                   const sc = scoreClass(w.score);
                   const colorMap = { elite: 'gold', strong: 'success', moderate: 'primary', risky: 'warning', poor: 'error' };
                   
