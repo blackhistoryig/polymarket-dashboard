@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 
-const DEFAULT_LIMIT = 12;
+const DEFAULT_LIMIT = 6;
 const MAX_LIMIT = 24;
 
 export default function MarketGrid() {
