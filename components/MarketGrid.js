@@ -161,27 +161,30 @@ export default function MarketGrid() {
                     <span><span style={{color:'var(--color-text-faint)'}}>24h Vol </span><b>{fmt(m.volume)}</b></span>
                     <span><span style={{color:'var(--color-text-faint)'}}>Liq </span><b style={{color:'var(--color-primary)'}}>{fmt(m.liquidity)}</b></span>
                   </div>
-                </div>
-
-                {/* ── BACK ── */}
+                        {/* ── BACK ── */}
                 <div className="card" style={{position:'absolute',inset:0,backfaceVisibility:'hidden',transform:'rotateY(180deg)',display:'flex',flexDirection:'column',padding:'var(--space-3)',background:'var(--color-bg-alt)',overflow:'hidden'}}>
                   {/* Back header */}
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px',paddingBottom:'6px',borderBottom:'1px solid var(--color-border)'}}>
                     <span style={{fontSize:'12px',fontWeight:600,color:'var(--color-text)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.question}</span>
-                    <span style={{fontSize:'10px',color:'var(--color-text-faint)',marginLeft:'6px',whiteSpace:'nowrap'}}>← flip back</span>
+                    <span style={{fontSize:'10px',color:'var(--color-text-faint)',marginLeft:'6px',whiteSpace:'nowrap'}}>← Back</span>
                   </div>
 
                   {det?.loading ? (
-                    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--color-text-muted)',fontSize:'12px'}}>
-                      Loading orderbook...
+                    <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',color:'var(--color-text-muted)',fontSize:'12px',gap:'8px'}}>
+                      <div style={{width:'20px',height:'20px',border:'2px solid var(--color-border)',borderTopColor:'var(--color-primary)',borderRadius:'50%',animation:'spin 0.8s linear infinite'}} />
+                      Fetching Orderbook...
                     </div>
+                  ) : det?.error ? (
+                     <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',color:'#ef4444',fontSize:'12px',textAlign:'center',padding:'var(--space-4)'}}>
+                        Failed to load real-time depth.
+                     </div>
                   ) : (
                     <>
                       {/* Orderbook */}
                       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'6px',marginBottom:'8px'}}>
                         {/* Bids */}
                         <div>
-                          <div style={{fontSize:'10px',fontWeight:700,color:'#10b981',marginBottom:'3px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Bids (Buy)</div>
+                          <div style={{fontSize:'10px',fontWeight:700,color:'#10b981',marginBottom:'3px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Real-time Bids</div>
                           <table style={{width:'100%',fontSize:'11px',borderCollapse:'collapse'}}>
                             <thead><tr>
                               <th style={{textAlign:'left',color:'var(--color-text-faint)',fontWeight:500,paddingBottom:'2px'}}>Price</th>
@@ -194,13 +197,12 @@ export default function MarketGrid() {
                                   <td style={{textAlign:'right',fontFamily:'var(--font-mono)',color:'var(--color-text-muted)',padding:'1px 0'}}>{b.size.toFixed(0)}</td>
                                 </tr>
                               ))}
-                              {!det?.bids?.length && <tr><td colSpan="2" style={{color:'var(--color-text-faint)',fontSize:'10px'}}>No bids</td></tr>}
                             </tbody>
                           </table>
                         </div>
                         {/* Asks */}
                         <div>
-                          <div style={{fontSize:'10px',fontWeight:700,color:'#ef4444',marginBottom:'3px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Asks (Sell)</div>
+                          <div style={{fontSize:'10px',fontWeight:700,color:'#ef4444',marginBottom:'3px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Real-time Asks</div>
                           <table style={{width:'100%',fontSize:'11px',borderCollapse:'collapse'}}>
                             <thead><tr>
                               <th style={{textAlign:'left',color:'var(--color-text-faint)',fontWeight:500,paddingBottom:'2px'}}>Price</th>
@@ -213,19 +215,18 @@ export default function MarketGrid() {
                                   <td style={{textAlign:'right',fontFamily:'var(--font-mono)',color:'var(--color-text-muted)',padding:'1px 0'}}>{a.size.toFixed(0)}</td>
                                 </tr>
                               ))}
-                              {!det?.asks?.length && <tr><td colSpan="2" style={{color:'var(--color-text-faint)',fontSize:'10px'}}>No asks</td></tr>}
                             </tbody>
                           </table>
                         </div>
                       </div>
 
-                      {/* Recent Trades */}
+                      {/* Recent Trades (Price History Proxy) */}
                       <div style={{marginBottom:'8px'}}>
-                        <div style={{fontSize:'10px',fontWeight:700,color:'var(--color-text-muted)',marginBottom:'3px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Recent Price Moves</div>
+                        <div style={{fontSize:'10px',fontWeight:700,color:'var(--color-text-muted)',marginBottom:'3px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Price Updates (Proxy Feed)</div>
                         <table style={{width:'100%',fontSize:'11px',borderCollapse:'collapse'}}>
                           <thead><tr>
                             <th style={{textAlign:'left',color:'var(--color-text-faint)',fontWeight:500}}>Time</th>
-                            <th style={{textAlign:'center',color:'var(--color-text-faint)',fontWeight:500}}>Side</th>
+                            <th style={{textAlign:'center',color:'var(--color-text-faint)',fontWeight:500}}>Side*</th>
                             <th style={{textAlign:'right',color:'var(--color-text-faint)',fontWeight:500}}>Price</th>
                           </tr></thead>
                           <tbody>
@@ -238,9 +239,9 @@ export default function MarketGrid() {
                                 <td style={{textAlign:'right',fontFamily:'var(--font-mono)',color:'var(--color-text)',padding:'1px 0'}}>{t.price?.toFixed ? t.price.toFixed(3) : t.price}</td>
                               </tr>
                             ))}
-                            {!det?.recentMoves?.length && <tr><td colSpan="3" style={{color:'var(--color-text-faint)',fontSize:'10px'}}>No recent data</td></tr>}
                           </tbody>
                         </table>
+                        <div style={{fontSize:'9px', color:'var(--color-text-faint)', marginTop:'4px', fontStyle:'italic'}}>*Side inferred from price delta</div>
                       </div>
                     </>
                   )}
@@ -248,9 +249,9 @@ export default function MarketGrid() {
                   {/* Vet Traders button */}
                   <div style={{marginTop:'auto',paddingTop:'6px'}}>
                     <button className="btn btn-primary btn-sm" style={{width:'100%',fontSize:'12px'}}
-                      onClick={e => { e.stopPropagation(); router.push(`/wallet?q=${yes?.token_id || ''}`); }}>
-                      <span dangerouslySetInnerHTML={{__html:'<i data-lucide="shield-check" width="12" height="12"></i>'}} />
-                      {' '}Vet Top Traders on this Market
+                      onClick={e => { e.stopPropagation(); router.push(`/wallet?wallet=${yes?.token_id || ''}`); }}>
+                      <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="shield-check" width="12" height="12"></i>' }} />
+                      {' '}Vet Traders for this Market
                     </button>
                   </div>
                 </div>
@@ -261,27 +262,10 @@ export default function MarketGrid() {
         })}
       </div>
 
-      {/* Show more/less */}
-      {markets.length > DEFAULT_LIMIT && (
-        <div style={{textAlign:'center',marginTop:'var(--space-4)'}}>
-          <button className="btn btn-ghost btn-sm" onClick={() => setShowAll(p => !p)}>
-            <span dangerouslySetInnerHTML={{__html: showAll
-              ? '<i data-lucide="chevron-up" width="13" height="13"></i>'
-              : '<i data-lucide="chevron-down" width="13" height="13"></i>'}} />
-            {showAll ? ' Show fewer' : ` Show ${markets.length - DEFAULT_LIMIT} more markets`}
-          </button>
-        </div>
-      )}
-
-      {/* Scroll cue */}
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'6px',padding:'var(--space-6) 0 var(--space-2)',borderTop:'1px solid var(--color-border)',marginTop:'var(--space-4)'}}>
-        <span style={{fontSize:'var(--text-xs)',color:'var(--color-text-faint)',letterSpacing:'0.08em',textTransform:'uppercase',fontWeight:500}}>
-          Top Trader Leaderboard below
-        </span>
-        <span style={{animation:'bounce 1.5s infinite'}} dangerouslySetInnerHTML={{__html:'<i data-lucide="chevrons-down" width="18" height="18" style="color:var(--color-primary);opacity:0.6;"></i>'}} />
-      </div>
-
-      <style>{`@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }`}</style>
+      <style>{`
+        @keyframes spin { from {transform:rotate(0deg)} to {transform:rotate(360deg)} }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+      `}</style>
     </div>
   );
 }

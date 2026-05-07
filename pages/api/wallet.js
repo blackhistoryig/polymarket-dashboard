@@ -101,7 +101,7 @@ function computeScore(leaderData, positions, activities) {
   const diversityScore = topCatPct > 0.9 ? 1 : topCatPct > 0.7 ? 3 : topCatPct > 0.5 ? 6 : 9;
 
   // Weighted final score
-  const raw = (
+  let raw = (
     pnlScore * 0.25 +
     wrScore * 0.20 +
     volScore * 0.15 +
@@ -109,6 +109,11 @@ function computeScore(leaderData, positions, activities) {
     disciplineScore * 0.10 +
     diversityScore * 0.10
   );
+  
+  // Penalize for skew or thin sample
+  if (pnlSkew > 0.5) raw *= 0.8;
+  if (totalPositions < 20) raw *= 0.7;
+
   const score = Math.max(1, Math.min(10, parseFloat(raw.toFixed(1))));
 
   // Verdict
@@ -118,6 +123,23 @@ function computeScore(leaderData, positions, activities) {
   else if (score >= 5.0) { verdict = 'Monitor Only'; verdictColor = '#f59e0b'; }
   else { verdict = 'Avoid Copying'; verdictColor = '#ef4444'; }
 
+  // Edge Type Inference
+  let edgeType = 'Generalist';
+  const sortedCats = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
+  if (topCatPct > 0.6) {
+    const top = sortedCats[0][0];
+    edgeType = `${top.charAt(0).toUpperCase() + top.slice(1)} Specialist`;
+  } else if (disciplineScore > 8 && winRate > 0.55) {
+    edgeType = 'Consistent Grinder';
+  } else if (pnlScore > 8 && pnlSkew < 0.2) {
+    edgeType = 'Whale Power';
+  } else if (volScore > 8) {
+    edgeType = 'High Frequency';
+  }
+
+  // Copyability Score (0-100 for more granularity)
+  const copyabilityScore = Math.round(score * 10);
+
   // Red flags
   const flags = [];
   if (totalPositions < 50) flags.push({ id: 'sample', label: 'Thin sample size', detail: `Only ${totalPositions} closed positions (need 50+)` });
@@ -125,7 +147,7 @@ function computeScore(leaderData, positions, activities) {
   if (daysSinceActive > 30) flags.push({ id: 'stale', label: 'Inactive > 30 days', detail: `Last trade ~${Math.round(daysSinceActive)} days ago` });
   if (disciplineScore < 4) flags.push({ id: 'sizing', label: 'Erratic position sizing', detail: 'High variance in trade sizes' });
   if (topCatPct > 0.7) {
-    const topCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'unknown';
+    const topCat = sortedCats[0]?.[0] || 'unknown';
     flags.push({ id: 'concentration', label: 'Category concentration', detail: `${(topCatPct * 100).toFixed(0)}% of trades in "${topCat}"` });
   }
 
@@ -141,16 +163,41 @@ function computeScore(leaderData, positions, activities) {
   if (insights.length === 0) insights.push('Insufficient data to generate detailed insights.');
 
   // Category breakdown
-  const categoryBreakdown = Object.entries(catCounts)
-    .sort((a, b) => b[1] - a[1])
+  const categoryBreakdown = sortedCats
     .map(([cat, count]) => ({ cat, count, pct: totalPositions > 0 ? (count / totalPositions * 100).toFixed(1) : 0 }));
+
+  // Sentiment Bias (YES vs NO)
+  const yesCount = positions.filter(p => p.outcome?.toLowerCase() === 'yes').length;
+  const noCount = positions.filter(p => p.outcome?.toLowerCase() === 'no').length;
+  const sentimentBias = totalPositions > 0 ? (yesCount / (yesCount + noCount || 1) * 100).toFixed(0) : 50;
+  
+  if (parseFloat(sentimentBias) > 80) flags.push({ id: 'bias', label: 'Heavy YES bias', detail: `${sentimentBias}% of bets are "YES" — potentially a perma-bull.` });
+  if (parseFloat(sentimentBias) < 20) flags.push({ id: 'bias', label: 'Heavy NO bias', detail: `${100 - sentimentBias}% of bets are "NO" — potentially a perma-bear.` });
+
+  // Extract Top 5 largest open positions
+  const openPositions = positions
+    .filter(p => parseFloat(p.size) > 0)
+    .sort((a, b) => (parseFloat(b.totalBought) || 0) - (parseFloat(a.totalBought) || 0))
+    .slice(0, 5)
+    .map(p => ({
+      title: p.title,
+      slug: p.slug,
+      outcome: p.outcome,
+      size: parseFloat(p.size).toFixed(0),
+      value: (parseFloat(p.size) * parseFloat(p.initialPrice)).toFixed(2), // Rough value
+      pnl: parseFloat(p.realizedPnl || 0).toFixed(2),
+    }));
 
   return {
     score,
+    copyabilityScore,
+    edgeType,
     verdict,
     verdictColor,
     flags,
     insights,
+    openPositions,
+    sentimentBias,
     stats: {
       pnl,
       vol,
