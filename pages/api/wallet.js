@@ -31,18 +31,20 @@ function inferCategory(slug) {
 
 // ── Scoring engine ───────────────────────────────────────────────────────────
 function computeScore(leaderData, positions, activities) {
-  const pnl = parseFloat(leaderData.pnl) || 0;
-  const vol = parseFloat(leaderData.vol) || 0;
+  // Strip characters from leaderboard strings (e.g. "$1,234.50" -> 1234.5)
+  const cleanNum = (s) => typeof s === 'string' ? parseFloat(s.replace(/[$,]/g, '')) : (parseFloat(s) || 0);
+  
+  const pnl = cleanNum(leaderData.pnl);
+  const vol = cleanNum(leaderData.vol);
 
   // Derive stats from positions
-  const closed = positions.filter(p => parseFloat(p.realizedPnl) !== 0 || p.size === 0);
   const totalPositions = positions.length;
 
   // Win rate: positions with positive realizedPnl
-  const winners = positions.filter(p => parseFloat(p.realizedPnl) > 0).length;
+  const winners = positions.filter(p => (parseFloat(p.realizedPnl) || 0) > 0).length;
   const winRate = totalPositions > 0 ? winners / totalPositions : 0;
 
-  // Recency from activity timestamps (unix ms)
+  // Recency from activity timestamps
   const now = Date.now() / 1000;
   const latestTs = activities.length > 0 ? Math.max(...activities.map(a => a.timestamp || 0)) : 0;
   const daysSinceActive = latestTs > 0 ? (now - latestTs) / 86400 : 999;
@@ -61,7 +63,7 @@ function computeScore(leaderData, positions, activities) {
   const biggestWin = pnlList.length > 0 ? Math.max(...pnlList) : 0;
   const pnlSkew = pnl > 0 && biggestWin > 0 ? biggestWin / pnl : 0;
 
-  // Active months (rough: spread of activity timestamps)
+  // Active months
   let activeMonths = 1;
   if (activities.length > 1) {
     const oldest = Math.min(...activities.map(a => a.timestamp || now));
@@ -69,26 +71,14 @@ function computeScore(leaderData, positions, activities) {
   }
 
   // --- Score components (each 0-10) ---
-  // 1. PnL quality (log scale, capped at $500k for 10)
   const pnlScore = pnl <= 0 ? 0 : Math.min(10, (Math.log10(Math.max(1, pnl)) / Math.log10(500000)) * 10);
-
-  // 2. Win rate adjusted for sample size
   const sampleFactor = Math.min(1, totalPositions / 50);
   const wrScore = winRate * 10 * sampleFactor;
-
-  // 3. Volume per active month (normalized)
   const volPerMonth = vol / activeMonths;
   const volScore = Math.min(10, (Math.log10(Math.max(1, volPerMonth)) / Math.log10(100000)) * 10);
+  const recencyScore = daysSinceActive <= 7 ? 10 : daysSinceActive <= 14 ? 8 : daysSinceActive <= 30 ? 6 : daysSinceActive <= 60 ? 4 : 2;
 
-  // 4. Recency
-  const recencyScore = daysSinceActive <= 7 ? 10
-    : daysSinceActive <= 14 ? 8
-    : daysSinceActive <= 30 ? 6
-    : daysSinceActive <= 60 ? 4
-    : daysSinceActive <= 90 ? 2 : 0;
-
-  // 5. Position sizing discipline (inverse of coefficient of variation in size)
-  const sizes = positions.map(p => parseFloat(p.totalBought) || 0).filter(v => v > 0);
+  const sizes = positions.map(p => parseFloat(p.size) * (parseFloat(p.avgPrice) || 0.5)).filter(v => v > 0);
   let disciplineScore = 5;
   if (sizes.length > 2) {
     const mean = sizes.reduce((a, b) => a + b, 0) / sizes.length;
@@ -96,121 +86,83 @@ function computeScore(leaderData, positions, activities) {
     const cv = mean > 0 ? stdDev / mean : 1;
     disciplineScore = Math.max(0, Math.min(10, 10 - cv * 5));
   }
-
-  // 6. Diversification
   const diversityScore = topCatPct > 0.9 ? 1 : topCatPct > 0.7 ? 3 : topCatPct > 0.5 ? 6 : 9;
 
-  // Weighted final score
-  let raw = (
-    pnlScore * 0.25 +
-    wrScore * 0.20 +
-    volScore * 0.15 +
-    recencyScore * 0.20 +
-    disciplineScore * 0.10 +
-    diversityScore * 0.10
-  );
-  
-  // Penalize for skew or thin sample
+  let raw = (pnlScore * 0.25 + wrScore * 0.20 + volScore * 0.15 + recencyScore * 0.20 + disciplineScore * 0.10 + diversityScore * 0.10);
   if (pnlSkew > 0.5) raw *= 0.8;
   if (totalPositions < 20) raw *= 0.7;
 
   const score = Math.max(1, Math.min(10, parseFloat(raw.toFixed(1))));
+  const copyabilityScore = Math.round(score * 10);
 
-  // Verdict
+  // Verdict and Reasons
   let verdict, verdictColor;
   if (score >= 8.5) { verdict = 'Strong Copy Candidate'; verdictColor = '#10b981'; }
   else if (score >= 7.0) { verdict = 'Worth Tracking'; verdictColor = '#3b82f6'; }
   else if (score >= 5.0) { verdict = 'Monitor Only'; verdictColor = '#f59e0b'; }
   else { verdict = 'Avoid Copying'; verdictColor = '#ef4444'; }
 
-  // Edge Type Inference
-  let edgeType = 'Generalist';
-  const sortedCats = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
-  if (topCatPct > 0.6) {
-    const top = sortedCats[0][0];
-    edgeType = `${top.charAt(0).toUpperCase() + top.slice(1)} Specialist`;
-  } else if (disciplineScore > 8 && winRate > 0.55) {
-    edgeType = 'Consistent Grinder';
-  } else if (pnlScore > 8 && pnlSkew < 0.2) {
-    edgeType = 'Whale Power';
-  } else if (volScore > 8) {
-    edgeType = 'High Frequency';
-  }
-
-  // Copyability Score (0-100 for more granularity)
-  const copyabilityScore = Math.round(score * 10);
-
-  // Red flags
-  const flags = [];
-  if (totalPositions < 50) flags.push({ id: 'sample', label: 'Thin sample size', detail: `Only ${totalPositions} closed positions (need 50+)` });
-  if (pnlSkew > 0.4) flags.push({ id: 'skew', label: 'One oversized win', detail: `Biggest win = ${(pnlSkew * 100).toFixed(0)}% of total P&L` });
-  if (daysSinceActive > 30) flags.push({ id: 'stale', label: 'Inactive > 30 days', detail: `Last trade ~${Math.round(daysSinceActive)} days ago` });
-  if (disciplineScore < 4) flags.push({ id: 'sizing', label: 'Erratic position sizing', detail: 'High variance in trade sizes' });
-  if (topCatPct > 0.7) {
-    const topCat = sortedCats[0]?.[0] || 'unknown';
-    flags.push({ id: 'concentration', label: 'Category concentration', detail: `${(topCatPct * 100).toFixed(0)}% of trades in "${topCat}"` });
-  }
-
-  // Plain-English insights
+  // Logic-backed insights for "Avoid Copying" or Low scores
   const insights = [];
-  if (pnl > 0 && topCatPct > 0.7) insights.push('Profitable but overfit to one category — risky to copy across all markets.');
-  if (winRate > 0.6 && totalPositions > 50) insights.push('Consistent across many trades — good signal quality.');
-  if (pnl > 0 && daysSinceActive > 30) insights.push('Strong P&L but wallet has gone stale — verify before copying.');
-  if (winRate > 0.65 && totalPositions < 20) insights.push('High win rate with too little sample size — may be luck.');
-  if (pnlSkew > 0.4 && pnl > 0) insights.push('P&L driven by one big win — skill may be overstated.');
-  if (disciplineScore >= 7 && winRate > 0.5) insights.push('Disciplined sizing with solid win rate — hallmarks of a skilled trader.');
-  if (recencyScore >= 8 && pnl > 0) insights.push('Recently active with positive P&L — copy signal is current.');
-  if (insights.length === 0) insights.push('Insufficient data to generate detailed insights.');
-
-  // Category breakdown
-  const categoryBreakdown = sortedCats
-    .map(([cat, count]) => ({ cat, count, pct: totalPositions > 0 ? (count / totalPositions * 100).toFixed(1) : 0 }));
-
-  // Sentiment Bias (YES vs NO)
-  const yesCount = positions.filter(p => p.outcome?.toLowerCase() === 'yes').length;
-  const noCount = positions.filter(p => p.outcome?.toLowerCase() === 'no').length;
-  const sentimentBias = totalPositions > 0 ? (yesCount / (yesCount + noCount || 1) * 100).toFixed(0) : 50;
-  
-  if (parseFloat(sentimentBias) > 80) flags.push({ id: 'bias', label: 'Heavy YES bias', detail: `${sentimentBias}% of bets are "YES" — potentially a perma-bull.` });
-  if (parseFloat(sentimentBias) < 20) flags.push({ id: 'bias', label: 'Heavy NO bias', detail: `${100 - sentimentBias}% of bets are "NO" — potentially a perma-bear.` });
+  if (score < 5) {
+    if (totalPositions < 20) insights.push('⚠️ High risk: Insufficient trade history to verify if P&L is skill or luck.');
+    if (disciplineScore < 4) insights.push('⚠️ High risk: Inconsistent bet sizing suggests poor bankroll management.');
+    if (pnlSkew > 0.6) insights.push('⚠️ High risk: Portfolio is carried by a single "lucky" win; regular trades are unprofitable.');
+    if (winRate < 0.4) insights.push('⚠️ High risk: Low win rate indicates poor market prediction quality.');
+  } else {
+    if (winRate > 0.6 && totalPositions > 50) insights.push('✅ Signal quality: High win rate maintained over a large sample size.');
+    if (disciplineScore > 8) insights.push('✅ Discipline: Extremely consistent position sizing suggests a professional approach.');
+  }
+  if (insights.length === 0) insights.push('Analyzing trading patterns for deeper insights...');
 
   // Extract Top 5 largest open positions
   const openPositions = positions
     .filter(p => parseFloat(p.size) > 0)
-    .sort((a, b) => (parseFloat(b.totalBought) || 0) - (parseFloat(a.totalBought) || 0))
-    .slice(0, 5)
-    .map(p => ({
-      title: p.title,
-      slug: p.slug,
-      outcome: p.outcome,
-      size: parseFloat(p.size).toFixed(0),
-      value: (parseFloat(p.size) * parseFloat(p.initialPrice)).toFixed(2), // Rough value
-      pnl: parseFloat(p.realizedPnl || 0).toFixed(2),
-    }));
+    .map(p => {
+        const size = parseFloat(p.size) || 0;
+        const price = parseFloat(p.avgPrice) || parseFloat(p.lastPrice) || 0.5;
+        return {
+            title: p.title,
+            slug: p.slug,
+            outcome: p.outcome,
+            size: size.toFixed(0),
+            value: (size * price).toFixed(2),
+            pnl: (parseFloat(p.realizedPnl) || 0).toFixed(2),
+        };
+    })
+    .sort((a, b) => parseFloat(b.value) - parseFloat(a.value))
+    .slice(0, 5);
+
+  // Category breakdown
+  const categoryBreakdown = Object.entries(catCounts)
+    .map(([cat, count]) => ({ cat, count, pct: totalPositions > 0 ? (count / totalPositions * 100).toFixed(1) : 0 }))
+    .sort((a, b) => b.count - a.count);
+
+  // Sentiment Bias (YES vs NO)
+  const yesCount = positions.filter(p => p.outcome?.toLowerCase() === 'yes').length;
+  const noCount = positions.filter(p => p.outcome?.toLowerCase() === 'no').length;
+  const sentimentBias = totalPositions > 0 ? Math.round((yesCount / (yesCount + noCount || 1)) * 100) : 50;
 
   return {
     score,
     copyabilityScore,
-    edgeType,
     verdict,
     verdictColor,
-    flags,
     insights,
     openPositions,
     sentimentBias,
+    categoryBreakdown,
     stats: {
       pnl,
       vol,
       winRate: (winRate * 100).toFixed(1),
       totalPositions,
       activeMonths,
-      daysSinceActive: Math.round(daysSinceActive),
-      lastActiveTs: latestTs,
       pnlSkew: (pnlSkew * 100).toFixed(1),
       topCatPct: (topCatPct * 100).toFixed(1),
       disciplineScore: disciplineScore.toFixed(1),
+      daysSinceActive: Math.round(daysSinceActive),
     },
-    categoryBreakdown,
     scoreComponents: {
       pnlScore: pnlScore.toFixed(1),
       wrScore: wrScore.toFixed(1),

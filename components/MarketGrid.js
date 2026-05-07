@@ -68,7 +68,7 @@ export default function MarketGrid() {
   return (
     <div style={{marginTop:'var(--space-8)'}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'var(--space-4)'}}>
-        <h2 className="section-heading" style={{margin:0}}>Hot Markets</h2>
+        <h2 className="section-heading" style={{margin:0}}>🔥 Hot Markets</h2>
         <div style={{display:'flex',gap:'6px'}}>
           {[
             {id:'volume', label:'Volume', icon:'trending-up'},
@@ -85,7 +85,7 @@ export default function MarketGrid() {
       </div>
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(290px,1fr))',gap:'var(--space-4)'}}>
-        {visible.map(m => {
+        {visible.map((m, idx) => {
           const id = m.condition_id;
           const isFlipped = !!flipped[id];
           const det = details[id];
@@ -93,6 +93,15 @@ export default function MarketGrid() {
           const no  = m.tokens?.[1];
           const yesPct = yes?.price ? Math.round(yes.price * 100) : null;
           const noPct  = no?.price  ? Math.round(no.price  * 100) : null;
+
+          // Varied traders for discovery
+          const topTraders = [
+            { name: 'everydaymortgage', addr: '0x91eee6b7cea1916214daebec3b92b7513079c5b8' },
+            { name: 'viva_la_mexico', addr: '0x0d3e56a65ba18600d8f0761e3271507ef1108269' },
+            { name: 'polytester', addr: '0x3239a584093952f190e8d356886884674f145025' },
+            { name: 'giantwhale', addr: '0xf977814e90da44bfa03b6295a0616a897441acec' }
+          ];
+          const suggested = topTraders[idx % topTraders.length];
 
           return (
             <div key={id} style={{perspective:'1200px', height: isFlipped ? '420px' : '200px', transition:'height 0.55s', cursor:'pointer'}}
@@ -179,11 +188,12 @@ export default function MarketGrid() {
                           </tbody>
                         </table>
                       </div>
-                      <div style={{padding:'6px', background:'rgba(59,130,246,0.05)', borderRadius:'6px', border:'1px solid rgba(59,130,246,0.1)', marginBottom:'4px'}}>
+                      <div style={{padding:'8px', background:'rgba(59,130,246,0.05)', borderRadius:'6px', border:'1px solid rgba(59,130,246,0.1)', marginBottom:'4px'}}>
+                         <div style={{fontSize:'10px', color:'var(--color-primary)', fontWeight:700, textTransform:'uppercase', marginBottom:'4px'}}>Top Trader discovery</div>
                          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                            <span style={{fontSize:'11px', fontWeight:600}}>everydaymortgage</span>
-                            <button className="btn btn-primary btn-sm" style={{height:'20px', padding:'0 6px', fontSize:'10px'}}
-                              onClick={e => { e.stopPropagation(); router.push('/wallet?wallet=0x91eee6b7cea1916214daebec3b92b7513079c5b8'); }}>
+                            <span style={{fontSize:'12px', fontWeight:600}}>{suggested.name}</span>
+                            <button className="btn btn-primary btn-sm" style={{height:'24px', padding:'0 10px', fontSize:'11px'}}
+                              onClick={e => { e.stopPropagation(); router.push(`/wallet?wallet=${suggested.addr}`); }}>
                               Vet
                             </button>
                          </div>

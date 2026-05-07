@@ -61,10 +61,10 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
 
   return (
     <>
-      {dataSource?.onChain === null && (
+      {stats?.daysSinceActive > 90 && (
         <div className="fallback-banner">
-          <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="info" width="14" height="14" style="flex-shrink: 0;"></i>' }} />
-          Leaderboard stats loaded. Deeper trade-history analysis is still pending — live data may differ.
+          <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="clock" width="14" height="14" style="flex-shrink: 0;"></i>' }} />
+          This wallet has been inactive for {stats.daysSinceActive} days. Signal quality may be degraded.
         </div>
       )}
 
@@ -88,9 +88,13 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
                 {copyabilityScore}% Copyability
              </div>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)', maxWidth: '60ch' }}>
-            {analysis?.insights?.[0] || 'Analyzing trading patterns...'}
-          </p>
+          <div style={{marginTop:'var(--space-3)'}}>
+             {analysis?.insights?.map((ins, i) => (
+                <div key={i} style={{fontSize:'13px', color: ins.startsWith('⚠️') ? '#ef4444' : 'var(--color-text-muted)', marginBottom:'4px', fontWeight: ins.startsWith('⚠️') ? 500 : 400}}>
+                   {ins}
+                </div>
+             ))}
+          </div>
           <div className="wallet-actions">
             <Link href={`/compare?wallet=${proxyWallet}`} className="btn btn-primary btn-sm">
               <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="git-compare" width="13" height="13"></i>' }} />
@@ -134,24 +138,25 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
          {/* Largest Open Positions */}
          <div>
             <div className="section-heading">Largest Open Positions</div>
-            <div className="card" style={{padding:0, overflow:'hidden'}}>
-               <table className="data-table" style={{fontSize:'12px'}}>
+            <div className="card" style={{padding:0, overflow:'hidden', minHeight:'200px'}}>
+               <table className="data-table" style={{fontSize:'12px', width:'100%'}}>
                   <thead>
                      <tr>
-                        <th>Market</th>
-                        <th style={{textAlign:'right'}}>Value</th>
+                        <th style={{padding:'12px'}}>Market</th>
+                        <th style={{textAlign:'right', padding:'12px'}}>Value</th>
                      </tr>
                   </thead>
                   <tbody>
                      {(openPositions || []).map((p, i) => (
                         <tr key={i}>
-                           <td style={{maxWidth:'180px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                              <span style={{color: p.outcome === 'Yes' ? '#10b981' : '#ef4444', fontWeight:600}}>{p.outcome}</span> {p.title}
+                           <td style={{padding:'10px 12px', maxWidth:'220px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                              <span style={{color: p.outcome === 'Yes' ? '#10b981' : '#ef4444', fontWeight:700, marginRight:'6px'}}>{p.outcome?.toUpperCase()}</span>
+                              <span style={{color:'var(--color-text)'}}>{p.title}</span>
                            </td>
-                           <td style={{textAlign:'right'}} className="mono">${p.value}</td>
+                           <td style={{textAlign:'right', padding:'10px 12px'}} className="mono"><b>${p.value}</b></td>
                         </tr>
                      ))}
-                     {(!openPositions || openPositions.length === 0) && <tr><td colSpan="2" style={{textAlign:'center', color:'var(--color-text-faint)'}}>No open positions</td></tr>}
+                     {(!openPositions || openPositions.length === 0) && <tr><td colSpan="2" style={{textAlign:'center', color:'var(--color-text-faint)', padding:'40px'}}>No open positions</td></tr>}
                   </tbody>
                </table>
             </div>
