@@ -256,10 +256,6 @@ export default function MarketGrid() {
                          </div>
                       </div>
                     </>
-                  ) : (
-                    <div style={{flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--color-text-faint)', fontSize:'12px'}}>
-                       Select a token to view depth
-                    </div>
                   )}
 
                   {/* Vet Traders button */}
