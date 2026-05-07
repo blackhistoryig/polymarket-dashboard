@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function WalletAnalysis({ data, isCompareMode = false, compareSide = null }) {

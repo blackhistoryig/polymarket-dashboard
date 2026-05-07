@@ -243,15 +243,31 @@ export default function MarketGrid() {
                         </table>
                         <div style={{fontSize:'9px', color:'var(--color-text-faint)', marginTop:'4px', fontStyle:'italic'}}>*Side inferred from price delta</div>
                       </div>
+
+                      {/* Mock Top Holder for "Vet" flow test */}
+                      <div style={{padding:'8px', background:'rgba(59,130,246,0.05)', borderRadius:'6px', border:'1px solid rgba(59,130,246,0.1)', marginBottom:'8px'}}>
+                         <div style={{fontSize:'10px', fontWeight:700, color:'var(--color-primary)', textTransform:'uppercase', marginBottom:'4px'}}>Top Trader Discovery</div>
+                         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                            <span style={{fontSize:'12px', fontWeight:600}}>everydaymortgage</span>
+                            <button className="btn btn-primary btn-sm" style={{height:'24px', padding:'0 8px', fontSize:'11px'}}
+                              onClick={e => { e.stopPropagation(); router.push('/wallet?wallet=0x91eee6b7cea1916214daebec3b92b7513079c5b8'); }}>
+                              Vet
+                            </button>
+                         </div>
+                      </div>
                     </>
+                  ) : (
+                    <div style={{flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--color-text-faint)', fontSize:'12px'}}>
+                       Select a token to view depth
+                    </div>
                   )}
 
                   {/* Vet Traders button */}
-                  <div style={{marginTop:'auto',paddingTop:'6px'}}>
-                    <button className="btn btn-primary btn-sm" style={{width:'100%',fontSize:'12px'}}
-                      onClick={e => { e.stopPropagation(); router.push(`/wallet?wallet=${yes?.token_id || ''}`); }}>
-                      <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="shield-check" width="12" height="12"></i>' }} />
-                      {' '}Vet Traders for this Market
+                  <div style={{marginTop:'auto', paddingTop:'6px'}}>
+                    <button className="btn btn-secondary btn-sm" style={{width:'100%',fontSize:'12px'}}
+                      onClick={e => { e.stopPropagation(); router.push('/wallet'); }}>
+                      <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="users" width="12" height="12"></i>' }} />
+                      {' '}Browse All Traders
                     </button>
                   </div>
                 </div>
