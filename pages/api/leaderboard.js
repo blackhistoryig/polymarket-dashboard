@@ -17,8 +17,8 @@ export default async function handler(req, res) {
   if (!DUNE_API_KEY || !DUNE_QUERY_ID) {
     try {
       // FALLBACK TO LIVE POLYMARKET DATA API
-      // timeframe map: 1D -> 1d, 7D -> 7d, 1M -> 30d, All -> all
-      const windowMap = { '1D': '1d', '7D': '7d', '1M': '30d', 'All': 'all' };
+      // timeframe map: 1D -> day, 7D -> week, 1M -> month, All -> all
+      const windowMap = { '1D': 'day', '7D': 'week', '1M': 'month', 'All': 'all' };
       const window = windowMap[timeframe] || 'all';
       
       const response = await fetch(`https://data-api.polymarket.com/v1/leaderboard?limit=50&window=${window}`);

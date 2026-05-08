@@ -81,8 +81,8 @@ export default function Dashboard() {
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <div className="card-header" style={{ padding: 'var(--space-5)', paddingBottom: 'var(--space-4)', borderBottom: '1px solid var(--color-border)' }}>
             <div>
-              <div className="card-title">Top Traders — Market Performance</div>
-              <div className="card-subtitle">Click to perform deep Risk-Adjusted Vetting</div>
+              <div className="card-title">Top Traders — {timeframe === 'All' ? 'All-Time' : timeframe} Performance</div>
+              <div className="card-subtitle">Live market data fetched via Polymarket Intelligence layer</div>
             </div>
             <div className="flex gap-2">
               <button className={`btn btn-sm ${timeframe === '1D' ? 'btn-secondary' : 'btn-ghost text-muted'}`} onClick={() => setTimeframe('1D')}>1D</button>
