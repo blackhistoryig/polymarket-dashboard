@@ -15,15 +15,45 @@ export default async function handler(req, res) {
   ];
 
   if (!DUNE_API_KEY || !DUNE_QUERY_ID) {
-    console.log("No Dune API Key found, serving mock data for timeframe:", timeframe);
-    let list = [...BASE_LEADERBOARD];
-    if (timeframe === '1D') list = [list[3], list[0], list[1], list[6], list[2], list[4], list[5]];
-    if (timeframe === '7D') list = [list[1], list[2], list[0], list[4], list[3], list[5], list[6]];
-    if (timeframe === '1M') list = [list[2], list[0], list[4], list[1], list[3], list[6], list[5]];
-    
-    // Simulate network delay
-    await new Promise(r => setTimeout(r, 400));
-    return res.status(200).json(list.map((item, index) => ({ ...item, rank: index + 1 })));
+    try {
+      // FALLBACK TO LIVE POLYMARKET DATA API
+      // timeframe map: 1D -> 1d, 7D -> 7d, 1M -> 30d, All -> all
+      const windowMap = { '1D': '1d', '7D': '7d', '1M': '30d', 'All': 'all' };
+      const window = windowMap[timeframe] || 'all';
+      
+      const response = await fetch(`https://data-api.polymarket.com/v1/leaderboard?limit=50&window=${window}`);
+      if (!response.ok) throw new Error('Polymarket API unreachable');
+      
+      const data = await response.json();
+      const lbArr = Array.isArray(data) ? data : (data?.data || []);
+
+      const formatted = lbArr.map((row, index) => {
+        // Derive a score 0-100 based on rank or raw score if available
+        const rawScore = row.score || (100 - index);
+        let verdict = 'moderate';
+        if (rawScore >= 85) verdict = 'elite';
+        else if (rawScore >= 70) verdict = 'strong';
+        else if (rawScore >= 40) verdict = 'risky';
+        else verdict = 'poor';
+
+        return {
+          rank: index + 1,
+          address: row.proxyWallet || row.address,
+          label: row.userName || row.displayName || 'Unknown Trader',
+          score: Math.round(rawScore),
+          verdict: verdict,
+          pnl: `+$${(parseFloat(row.pnl || 0)).toLocaleString()}`,
+          winrate: row.winRate ? `${(parseFloat(row.winRate) * 100).toFixed(0)}%` : '—',
+          trades: row.totalTrades || '—'
+        };
+      });
+
+      return res.status(200).json(formatted);
+    } catch (e) {
+      console.error("Live Fallback Error:", e);
+      // Absolute fallback to mock if everything fails
+      return res.status(200).json(BASE_LEADERBOARD);
+    }
   }
 
   try {

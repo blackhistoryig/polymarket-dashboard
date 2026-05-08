@@ -5,7 +5,7 @@ import MarketGrid from '../components/MarketGrid';
 
 export default function Dashboard() {
   const router = useRouter();
-  const [timeframe, setTimeframe] = useState('All');
+  const [timeframe, setTimeframe] = useState('7D');
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,13 +48,9 @@ export default function Dashboard() {
       </Head>
 
       <div className="app-topbar">
-        <div className="breadcrumb">
-          <span className="breadcrumb-item" style={{fontWeight: 500, color: 'var(--color-text)'}}>Dashboard</span>
-        </div>
+        {/* Breadcrumb removed for single-level clarity */}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button className="btn btn-ghost btn-sm" onClick={() => router.push('/wallet')}>
-            <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="search" width="14" height="14"></i>' }} /> Lookup Wallet
-          </button>
+          {/* Redundant top-bar lookup removed */}
         </div>
       </div>
 
@@ -78,6 +74,8 @@ export default function Dashboard() {
 
         {/* Hot Markets with flipping cards */}
         <MarketGrid />
+
+        <div style={{ marginTop: 'var(--space-12)' }}></div>
 
         {/* Leaderboard */}
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
