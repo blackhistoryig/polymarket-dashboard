@@ -83,8 +83,8 @@ export default function Dashboard() {
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <div className="card-header" style={{ padding: 'var(--space-5)', paddingBottom: 'var(--space-4)', borderBottom: '1px solid var(--color-border)' }}>
             <div>
-              <div className="card-title">Top Traders — Leaderboard</div>
-              <div className="card-subtitle">Click any wallet to open Wallet Lookup</div>
+              <div className="card-title">Top Traders — Market Performance</div>
+              <div className="card-subtitle">Click to perform deep Risk-Adjusted Vetting</div>
             </div>
             <div className="flex gap-2">
               <button className={`btn btn-sm ${timeframe === '1D' ? 'btn-secondary' : 'btn-ghost text-muted'}`} onClick={() => setTimeframe('1D')}>1D</button>
@@ -99,7 +99,7 @@ export default function Dashboard() {
                 <tr>
                   <th style={{ width: 36 }}>#</th>
                   <th>Wallet</th>
-                  <th>Score</th>
+                  <th>Rank Score</th>
                   <th>Verdict</th>
                   <th>P&L (30d)</th>
                   <th>Win Rate</th>
@@ -115,11 +115,11 @@ export default function Dashboard() {
                   const colorMap = { elite: 'gold', strong: 'success', moderate: 'primary', risky: 'warning', poor: 'error' };
                   
                   return (
-                    <tr key={i} onClick={() => navigateToWallet(w.address)} title="Click to analyze wallet">
+                    <tr key={i} onClick={() => navigateToWallet(w.address)} title="Click for deep risk analysis" style={{cursor:'pointer'}}>
                       <td style={{ color: 'var(--color-text-faint)', fontSize: 'var(--text-xs)', fontWeight: 600 }}>{w.rank}</td>
                       <td>
-                        <div style={{ fontWeight: 500, fontSize: 'var(--text-sm)' }}>{w.label}</div>
-                        <div className="wallet-link">{w.address.slice(0, 10)}…{w.address.slice(-6)}</div>
+                        <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color:'var(--color-text)' }}>{w.label}</div>
+                        <div className="wallet-link" style={{fontSize:'11px'}}>{w.address.slice(0, 10)}…{w.address.slice(-6)}</div>
                       </td>
                       <td>
                         <span style={{ fontSize: 'var(--text-base)', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: `var(--color-${colorMap[sc]})` }}>
@@ -128,11 +128,11 @@ export default function Dashboard() {
                       </td>
                       <td><span className={`verdict verdict-${sc}`}>{verdictLabel(w.verdict)}</span></td>
                       <td style={{ fontWeight: 500 }} className={w.pnl.startsWith('+') ? 'text-success' : 'text-error'}>{w.pnl}</td>
-                      <td>{w.winrate}</td>
-                      <td className="text-muted">{w.trades}</td>
+                      <td style={{fontSize:'13px'}}>{w.winrate}</td>
+                      <td className="text-muted" style={{fontSize:'12px'}}>{w.trades}</td>
                       <td>
                         <button className="btn btn-ghost btn-sm" onClick={(e) => { e.stopPropagation(); navigateToWallet(w.address); }}>
-                          <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="arrow-right" width="13" height="13"></i>' }} />
+                          <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="shield-check" width="14" height="14"></i>' }} />
                         </button>
                       </td>
                     </tr>

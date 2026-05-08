@@ -21,9 +21,28 @@ export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
 
+  const [watchlistCount, setWatchlistCount] = useState(0);
+
   useEffect(() => {
     const html = document.documentElement;
     setIsDark(html.getAttribute('data-theme') === 'dark');
+
+    const updateCount = () => {
+      const list = JSON.parse(localStorage.getItem('watchlist') || '[]');
+      setWatchlistCount(list.length);
+    };
+
+    updateCount();
+    window.addEventListener('watchlistUpdated', updateCount);
+    window.addEventListener('storage', updateCount);
+    
+    const interval = setInterval(updateCount, 2000); // Poll every 2s as fallback
+
+    return () => {
+      window.removeEventListener('watchlistUpdated', updateCount);
+      window.removeEventListener('storage', updateCount);
+      clearInterval(interval);
+    };
   }, []);
 
   const toggleTheme = () => {
@@ -87,7 +106,7 @@ export default function Layout({ children }) {
             <Link href="/watchlist" className={`nav-item ${router.pathname === '/watchlist' ? 'active' : ''}`} onClick={close}>
               <span dangerouslySetInnerHTML={{ __html: '<i data-lucide="star" width="16" height="16"></i>' }} />
               Watchlist
-              <span className="nav-badge">0</span>
+              {watchlistCount > 0 && <span className="nav-badge">{watchlistCount}</span>}
             </Link>
 
           </nav>

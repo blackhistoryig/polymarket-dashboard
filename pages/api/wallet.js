@@ -193,23 +193,71 @@ export default async function handler(req, res) {
     let leaderEntry = null;
 
     if (isAddress) {
-      // Direct address lookup — find in leaderboard (scan up to 2000 entries)
       proxyWallet = q.trim().toLowerCase();
       // Try leaderboard scan for rank/username
       const lbRes = await fetch(`${DATA_API}/leaderboard?limit=2000`);
       const lbData = await lbRes.json();
-      leaderEntry = Array.isArray(lbData)
-        ? lbData.find(e => e.proxyWallet?.toLowerCase() === proxyWallet)
-        : null;
+      const lbArr = Array.isArray(lbData) ? lbData : (lbData?.data || []);
+      
+      // Look for match using BOTH proxyWallet (Data API) and address (Internal/Dune schema)
+      const entry = lbArr.find(e => 
+        (e.proxyWallet?.toLowerCase() === proxyWallet) || 
+        (e.address?.toLowerCase() === proxyWallet) ||
+        (e.wallet_address?.toLowerCase() === proxyWallet)
+      );
+      
+      if (entry) {
+        leaderEntry = {
+          userName: entry.userName || entry.label || entry.wallet_label,
+          proxyWallet: entry.proxyWallet || entry.address || entry.wallet_address,
+          pnl: entry.pnl || entry.pnl_all || '0',
+          vol: entry.vol || entry.volume || '0',
+          rank: entry.rank || 'Unranked'
+        };
+      }
+      
+      // FALLBACK: If not in leaderboard, try profile API for username
+      if (!leaderEntry) {
+        try {
+          const profRes = await fetch(`${DATA_API}/profile?address=${proxyWallet}`);
+          if (profRes.ok) {
+            const profData = await profRes.json();
+            leaderEntry = {
+              userName: profData.displayName || profData.username || profData.name,
+              proxyWallet: proxyWallet,
+              pnl: profData.pnl || profData.profit || '0',
+              vol: profData.volume || profData.vol || '0',
+              rank: 'Unranked'
+            };
+          }
+        } catch (e) {
+          console.warn('Profile fetch failed', e);
+        }
+      }
     } else {
       // Username lookup — scan leaderboard
       const lbRes = await fetch(`${DATA_API}/leaderboard?limit=2000`);
       const lbData = await lbRes.json();
-      leaderEntry = Array.isArray(lbData)
-        ? lbData.find(e => e.userName?.toLowerCase() === q.trim().toLowerCase())
-        : null;
-      if (!leaderEntry) return res.status(404).json({ error: `Username "${q}" not found on leaderboard` });
-      proxyWallet = leaderEntry.proxyWallet;
+      const lbArr = Array.isArray(lbData) ? lbData : (lbData?.data || []);
+      
+      const entry = lbArr.find(e => 
+        (e.userName?.toLowerCase() === q.trim().toLowerCase()) ||
+        (e.label?.toLowerCase() === q.trim().toLowerCase()) ||
+        (e.wallet_label?.toLowerCase() === q.trim().toLowerCase())
+      );
+      
+      if (!entry) {
+        return res.status(404).json({ error: `Username "${q}" not found in Top 2000 leaderboard.` });
+      }
+      
+      proxyWallet = entry.proxyWallet || entry.address || entry.wallet_address;
+      leaderEntry = {
+        userName: entry.userName || entry.label || entry.wallet_label,
+        proxyWallet: proxyWallet,
+        pnl: entry.pnl || entry.pnl_all || '0',
+        vol: entry.vol || entry.volume || '0',
+        rank: entry.rank || 'Unranked'
+      };
     }
 
     if (!proxyWallet) return res.status(404).json({ error: 'Wallet not found' });

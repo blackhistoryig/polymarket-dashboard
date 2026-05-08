@@ -33,12 +33,13 @@ export default function WalletAnalysis({ data, isCompareMode = false, compareSid
     localStorage.setItem('watchlist', JSON.stringify(newList));
     setIsWatched(!isWatched);
     // Dispatch event for other components (like nav or watchlist page)
-    window.dispatchEvent(new Event('watchlistUpdated'));
+    window.dispatchEvent(new CustomEvent('watchlistUpdated'));
   };
 
   const sc = scoreClass(score);
   const scoreMap = { elite:'score-elite', strong:'score-strong', moderate:'score-moderate', risky:'score-risky', poor:'score-poor' };
-  const name = leaderboard?.userName || 'Unknown Trader';
+  const rawName = leaderboard?.userName;
+  const name = rawName && rawName !== 'Unknown Trader' ? rawName : `${proxyWallet.slice(0, 6)}...${proxyWallet.slice(-4)}`;
 
   const fmt$ = (n) => {
     if (!n && n !== 0) return '$0';
